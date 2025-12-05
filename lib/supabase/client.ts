@@ -4,31 +4,45 @@ export function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+  // Log for debugging
+  if (typeof window !== 'undefined') {
+    console.log('Supabase client init:', { 
+      hasUrl: !!url, 
+      hasKey: !!key,
+      urlPrefix: url?.substring(0, 30) 
+    })
+  }
+
   // Return a mock client during build time if env vars are not set
-  if (!url || !key || key === 'placeholder_key_for_build') {
+  if (!url || !key) {
+    console.warn('Supabase env vars not set, using mock client')
+    const mockQuery = {
+      eq: () => mockQuery,
+      neq: () => mockQuery,
+      gt: () => mockQuery,
+      gte: () => mockQuery,
+      lt: () => mockQuery,
+      lte: () => mockQuery,
+      is: () => mockQuery,
+      in: () => mockQuery,
+      order: () => mockQuery,
+      limit: () => mockQuery,
+      single: async () => ({ data: null, error: null }),
+      then: async (resolve: (value: { data: never[], error: null }) => void) => resolve({ data: [], error: null }),
+    }
+    
     return {
       auth: {
-        getUser: async () => ({ data: { user: null } }),
-        signInWithPassword: async () => ({ error: { message: 'Not configured' } }),
-        signOut: async () => {},
-        exchangeCodeForSession: async () => ({ error: null }),
+        getUser: async () => ({ data: { user: null }, error: null }),
+        signInWithPassword: async () => ({ data: null, error: { message: 'Not configured' } }),
+        signOut: async () => ({ error: null }),
+        exchangeCodeForSession: async () => ({ data: null, error: null }),
       },
       from: () => ({
-        select: () => ({
-          eq: () => ({
-            single: async () => ({ data: null }),
-          }),
-          in: () => ({
-            order: () => ({
-              limit: async () => ({ data: [] }),
-            }),
-          }),
-          order: () => ({
-            limit: async () => ({ data: [] }),
-          }),
-        }),
-        insert: async () => ({ error: null }),
-        update: async () => ({ error: null }),
+        select: () => mockQuery,
+        insert: () => ({ select: () => mockQuery, single: async () => ({ data: null, error: null }) }),
+        update: () => ({ eq: () => ({ single: async () => ({ data: null, error: null }) }) }),
+        delete: () => ({ eq: async () => ({ error: null }) }),
       }),
     } as any
   }

@@ -70,13 +70,23 @@ export default function InvitesAdminPage() {
   }, [router, supabase])
 
   const fetchInvites = async () => {
-    const { data, error } = await supabase
-      .from('invites')
-      .select('*')
-      .order('created_at', { ascending: false })
+    try {
+      const { data, error } = await supabase
+        .from('invites')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-    if (data) {
-      setInvites(data)
+      console.log('Invites fetch result:', { data, error })
+      
+      if (error) {
+        console.error('Error fetching invites:', error)
+        setError(`Failed to load invites: ${error.message}`)
+      } else if (data) {
+        setInvites(data)
+      }
+    } catch (err) {
+      console.error('Exception fetching invites:', err)
+      setError('Failed to load invites')
     }
     setIsLoading(false)
   }
