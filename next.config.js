@@ -6,6 +6,10 @@ const nextConfig = {
     // Disable ESLint during build - we'll run it separately
     ignoreDuringBuilds: true,
   },
+  // Required for standalone mode
+  experimental: {
+    outputFileTracingRoot: undefined,
+  },
 }
 
 module.exports = nextConfig
