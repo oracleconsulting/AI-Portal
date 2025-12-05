@@ -153,8 +153,8 @@ export async function POST() {
         results.errors.push(`${invite.email}: Unknown error`)
       }
 
-      // Small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 100))
+      // Delay to avoid Resend rate limiting (max 2 requests/second)
+      await new Promise(resolve => setTimeout(resolve, 600))
     }
 
     return NextResponse.json({ 
