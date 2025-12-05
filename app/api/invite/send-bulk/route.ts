@@ -30,11 +30,12 @@ export async function POST() {
       return NextResponse.json({ error: 'Only admins can send bulk invites' }, { status: 403 })
     }
 
-    // Get all pending invites (not accepted, not expired)
+    // Get all pending invites (not accepted, not expired, not already emailed)
     const { data: pendingInvites, error: fetchError } = await supabase
       .from('invites')
       .select('*')
       .is('accepted_at', null)
+      .is('email_sent_at', null)
       .gt('expires_at', new Date().toISOString())
 
     if (fetchError) {
@@ -145,6 +146,11 @@ export async function POST() {
           results.failed++
           results.errors.push(`${invite.email}: ${emailError.message}`)
         } else {
+          // Mark as sent
+          await supabase
+            .from('invites')
+            .update({ email_sent_at: new Date().toISOString() })
+            .eq('id', invite.id)
           results.sent++
         }
       } catch (err) {
