@@ -5,14 +5,8 @@ nixPkgs = ["nodejs_18"]
 cmds = ["npm ci"]
 
 [phases.build]
-cmds = [
-  "npm run build",
-  "mkdir -p .next/standalone/.next",
-  "cp -r .next/static .next/standalone/.next/static",
-  "mkdir -p .next/standalone/public",
-  "cp -r public/* .next/standalone/public/ 2>/dev/null || true"
-]
+cmds = ["npm run build"]
 
 [start]
-cmd = "PORT=${PORT:-3030} HOSTNAME=0.0.0.0 node .next/standalone/server.js"
+cmd = "npm run start:next"
 
