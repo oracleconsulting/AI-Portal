@@ -27,9 +27,26 @@ export default function NewIdentificationForm() {
     cost_of_solution: '',
     time_saving_hours: '',
     time_saving_description: '',
+    staff_level: '',
     priority: 'medium' as Priority,
     notes: '',
   })
+
+  const STAFF_LEVELS = [
+    { value: 'admin', label: 'Admin', rate: 80 },
+    { value: 'junior', label: 'Junior', rate: 100 },
+    { value: 'senior', label: 'Senior', rate: 120 },
+    { value: 'assistant_manager', label: 'Assistant Manager', rate: 150 },
+    { value: 'manager', label: 'Manager', rate: 175 },
+    { value: 'director', label: 'Director', rate: 250 },
+    { value: 'partner', label: 'Partner', rate: 400 },
+  ]
+
+  const selectedStaffRate = STAFF_LEVELS.find(s => s.value === formData.staff_level)?.rate || 0
+  const estimatedWeeklyValue = formData.time_saving_hours && selectedStaffRate 
+    ? parseFloat(formData.time_saving_hours) * selectedStaffRate 
+    : 0
+  const estimatedAnnualValue = estimatedWeeklyValue * 52
 
   const handleSubmit = async (e: React.FormEvent, isDraft: boolean = false) => {
     e.preventDefault()
@@ -59,6 +76,7 @@ export default function NewIdentificationForm() {
           cost_of_solution: formData.cost_of_solution ? parseFloat(formData.cost_of_solution) : null,
           time_saving_hours: formData.time_saving_hours ? parseFloat(formData.time_saving_hours) : null,
           time_saving_description: formData.time_saving_description || null,
+          staff_level: formData.staff_level || null,
           priority: formData.priority,
           status: isDraft ? 'draft' : 'submitted',
           submitted_by: user.id,
@@ -160,7 +178,7 @@ export default function NewIdentificationForm() {
           </div>
 
           {/* Cost and Time Saving Row */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             <div>
               <label htmlFor="cost" className="block text-sm font-medium text-surface-700 mb-2">
                 Estimated Cost (£)
@@ -192,7 +210,48 @@ export default function NewIdentificationForm() {
                 placeholder="e.g., 10"
               />
             </div>
+
+            <div>
+              <label htmlFor="staff_level" className="block text-sm font-medium text-surface-700 mb-2">
+                Staff Level Affected
+              </label>
+              <select
+                id="staff_level"
+                value={formData.staff_level}
+                onChange={(e) => setFormData({ ...formData, staff_level: e.target.value })}
+                className="input-field"
+              >
+                <option value="">Select level...</option>
+                {STAFF_LEVELS.map((level) => (
+                  <option key={level.value} value={level.value}>
+                    {level.label} (£{level.rate}/hr)
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
+
+          {/* Value Calculator */}
+          {estimatedAnnualValue > 0 && (
+            <div className="bg-green-50 border border-green-100 rounded-xl p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-800">Estimated Value</p>
+                  <p className="text-xs text-green-600 mt-1">
+                    {formData.time_saving_hours} hrs × £{selectedStaffRate}/hr × 52 weeks
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-green-700">
+                    £{estimatedAnnualValue.toLocaleString()}/year
+                  </p>
+                  <p className="text-sm text-green-600">
+                    £{estimatedWeeklyValue.toLocaleString()}/week
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Time Saving Description */}
           <div>
