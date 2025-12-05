@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     // Send email via Resend
     const resend = getResendClient()
     const { error: emailError } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'AI Portal <noreply@rpgcc.com>',
+      from: process.env.RESEND_FROM_EMAIL || 'AI Portal <noreply@torsor.co.uk>',
       to: email,
       subject: `You're invited to join the RPGCC AI Portal - ${committeeName}`,
       html: `

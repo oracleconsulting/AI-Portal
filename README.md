@@ -140,13 +140,23 @@ Visit http://localhost:3030
 
 ## Deployment on Railway
 
-### 1. Connect Repository
+### Domain Setup
+
+The AI Portal is hosted at **ai.torsor.co.uk** alongside the existing Torsor ecosystem:
+
+| Domain | Purpose | Railway Service |
+|--------|---------|-----------------|
+| `torsor.co.uk` | Practice Platform | torsor-platform |
+| `client.torsor.co.uk` | Client Portal | client-portal |
+| `ai.torsor.co.uk` | AI Committee Portal | ai-portal |
+
+### 1. Create New Railway Service
 
 1. Go to [Railway](https://railway.app)
-2. Create new project → Deploy from GitHub
-3. Select this repository
+2. In your existing Torsor project, add new service
+3. Deploy from GitHub → Select the AI-Portal repository
 
-### 2. Configure Environment
+### 2. Configure Environment Variables
 
 Add these environment variables in Railway:
 
@@ -154,18 +164,20 @@ Add these environment variables in Railway:
 NEXT_PUBLIC_SUPABASE_URL=https://baovfbsblkbibbbypnbf.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 RESEND_API_KEY=re_xxxxxxxxxxxx
-RESEND_FROM_EMAIL=AI Portal <noreply@yourdomain.com>
-NEXT_PUBLIC_APP_URL=https://your-app.railway.app
+RESEND_FROM_EMAIL=AI Portal <noreply@torsor.co.uk>
+NEXT_PUBLIC_APP_URL=https://ai.torsor.co.uk
 ```
 
-### 3. Deploy
+### 3. Configure Domain
+
+1. In Railway, go to your ai-portal service → Settings → Domains
+2. Add custom domain: `ai.torsor.co.uk`
+3. In your DNS provider (where torsor.co.uk is managed):
+   - Add CNAME record: `ai` → `[your-railway-service].up.railway.app`
+
+### 4. Deploy
 
 Railway will automatically build and deploy on push to main.
-
-### 4. Configure Domain
-
-1. Go to Settings → Domains
-2. Add your custom domain or use the Railway-provided URL
 
 ## Project Structure
 
