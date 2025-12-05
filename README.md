@@ -4,6 +4,12 @@ A secure collaboration platform for AI committees at RPGCC. This portal enables 
 
 ## Features
 
+### Invite System
+- **Email Invitations**: Send branded invites via Resend to committee members
+- **Committee-specific Invites**: Separate invite flows for Implementation and Oversight
+- **Self-service Signup**: Recipients click link, set password, auto-assigned to correct committee
+- **Invite Management**: Admin page to track pending, accepted, and expired invites
+
 ### Implementation Committee Portal
 - **Identification Forms**: Submit and track AI opportunities
   - Document problems/bottlenecks identified
@@ -68,44 +74,46 @@ Find your anon key in the Supabase dashboard: Settings → API → anon public k
 
 ### 3. Set Up Database
 
-Run the schema in your Supabase SQL Editor:
+Run the schemas in your Supabase SQL Editor:
 
 1. Go to your Supabase project dashboard
 2. Navigate to SQL Editor
-3. Copy the contents of `supabase/schema.sql`
-4. Run the SQL
+3. Run `supabase/schema.sql` (main schema)
+4. Run `supabase/migrations/001_invites.sql` (invite system)
 
 This creates:
 - `profiles` - User profiles with committee assignments
 - `identification_forms` - Implementation committee forms
 - `meeting_transcripts` - Oversight meeting records
 - `oversight_suggestions` - Suggestions and ideas
+- `invites` - Pending invitations
 - Row Level Security policies for each committee
 
-### 4. Create Users
+### 4. Invite Users
 
-In Supabase Authentication:
+The recommended way to add users is via the invite system:
 
-1. Go to Authentication → Users
-2. Click "Add user"
-3. Enter email and password
-4. After creation, update their profile in the database:
+1. Create an initial admin user manually in Supabase Auth
+2. Update their profile to be an admin:
+   ```sql
+   UPDATE profiles SET role = 'admin' WHERE email = 'admin@rpgcc.com';
+   ```
+3. Log in and go to `/admin/invites`
+4. Send invites to committee members - they'll receive branded emails
+5. Recipients click the link, set their password, and are auto-assigned to their committee
+
+**Manual User Creation (Alternative):**
 
 ```sql
 -- Assign to Implementation Committee
 UPDATE profiles 
 SET committee = 'implementation', full_name = 'John Smith'
-WHERE email = 'john@example.com';
+WHERE email = 'john@rpgcc.com';
 
 -- Assign to Oversight Committee  
 UPDATE profiles 
 SET committee = 'oversight', full_name = 'Jane Doe'
-WHERE email = 'jane@example.com';
-
--- Make someone a chair
-UPDATE profiles 
-SET role = 'chair'
-WHERE email = 'chair@example.com';
+WHERE email = 'jane@rpgcc.com';
 ```
 
 ### 5. Run Development Server
@@ -145,6 +153,9 @@ Add these environment variables in Railway:
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://baovfbsblkbibbbypnbf.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+RESEND_API_KEY=re_xxxxxxxxxxxx
+RESEND_FROM_EMAIL=AI Portal <noreply@yourdomain.com>
+NEXT_PUBLIC_APP_URL=https://your-app.railway.app
 ```
 
 ### 3. Deploy

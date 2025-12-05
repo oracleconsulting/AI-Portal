@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import {
-  Brain,
   Home,
   FileText,
   PlusCircle,
@@ -19,6 +18,7 @@ import {
   MessageSquare,
   Shield,
   Lightbulb,
+  Users,
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -125,6 +125,13 @@ export function Sidebar({ committee, userName }: SidebarProps) {
           </div>
         )}
         <div className="space-y-1">
+          <Link
+            href="/admin/invites"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-surface-600 hover:bg-surface-50 hover:text-surface-900 transition-all"
+          >
+            <Users className="w-5 h-5" />
+            {!isCollapsed && <span>Invite Members</span>}
+          </Link>
           <Link
             href="/settings"
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-surface-600 hover:bg-surface-50 hover:text-surface-900 transition-all"
