@@ -27,6 +27,7 @@ interface Invite {
   email: string
   committee: 'implementation' | 'oversight'
   role: string
+  team?: string
   token: string
   expires_at: string
   accepted_at: string | null
@@ -49,6 +50,8 @@ export default function InvitesAdminPage() {
     committee: 'implementation' as 'implementation' | 'oversight',
     role: 'member',
   })
+  const [isBulkSending, setIsBulkSending] = useState(false)
+  const [bulkResult, setBulkResult] = useState<{ sent: number; failed: number } | null>(null)
 
   useEffect(() => {
     const checkAuthAndFetch = async () => {
@@ -116,6 +119,39 @@ export default function InvitesAdminPage() {
     setTimeout(() => setCopiedId(null), 2000)
   }
 
+  const handleBulkSend = async () => {
+    setIsBulkSending(true)
+    setError(null)
+    setSuccess(null)
+    setBulkResult(null)
+
+    try {
+      const response = await fetch('/api/invite/send-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to send bulk invites')
+        return
+      }
+
+      setBulkResult({ sent: data.sent, failed: data.failed })
+      setSuccess(data.message)
+      fetchInvites()
+    } catch {
+      setError('Failed to send bulk invites')
+    } finally {
+      setIsBulkSending(false)
+    }
+  }
+
+  const pendingInvites = invites.filter(
+    i => !i.accepted_at && new Date(i.expires_at) > new Date()
+  )
+
   const getStatusBadge = (invite: Invite) => {
     if (invite.accepted_at) {
       return (
@@ -175,6 +211,52 @@ export default function InvitesAdminPage() {
             Invite members to join the Implementation or Oversight committee
           </p>
         </div>
+
+        {/* Bulk Send Section */}
+        {pendingInvites.length > 0 && (
+          <div className="bg-gradient-to-r from-implementation-50 to-oversight-50 rounded-2xl border border-surface-100 shadow-sm p-6 mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-display text-lg font-bold text-surface-900 mb-1 flex items-center gap-2">
+                  <Mail className="w-5 h-5 text-implementation-600" />
+                  Send All Pending Invites
+                </h2>
+                <p className="text-surface-600">
+                  {pendingInvites.length} pending invite{pendingInvites.length !== 1 ? 's' : ''} ready to send
+                </p>
+              </div>
+              <button
+                onClick={handleBulkSend}
+                disabled={isBulkSending}
+                className="btn-primary flex items-center gap-2 px-6"
+              >
+                {isBulkSending ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Sending {pendingInvites.length} emails...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5" />
+                    Send All Invites
+                  </>
+                )}
+              </button>
+            </div>
+            {bulkResult && (
+              <div className="mt-4 p-4 rounded-xl bg-white/50">
+                <p className="text-sm text-surface-700">
+                  ✅ <strong>{bulkResult.sent}</strong> email{bulkResult.sent !== 1 ? 's' : ''} sent successfully
+                  {bulkResult.failed > 0 && (
+                    <span className="text-red-600 ml-2">
+                      ❌ {bulkResult.failed} failed
+                    </span>
+                  )}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Send Invite Form */}
         <div className="bg-white rounded-2xl border border-surface-100 shadow-sm p-6 mb-8">
@@ -298,7 +380,14 @@ export default function InvitesAdminPage() {
                       {getStatusBadge(invite)}
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-surface-500 capitalize">{invite.role}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-surface-500 capitalize">{invite.role}</span>
+                        {invite.team && (
+                          <span className="px-2 py-0.5 bg-implementation-100 text-implementation-700 rounded text-xs capitalize">
+                            {invite.team.replace('_', ' ')}
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2">
                         <span className="text-surface-400">{formatDate(invite.created_at)}</span>
                         {!invite.accepted_at && new Date(invite.expires_at) > new Date() && (
