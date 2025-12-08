@@ -63,7 +63,7 @@ export default function ImplementationReviewsPage() {
     const overdueThreshold = new Date()
     overdueThreshold.setDate(overdueThreshold.getDate() - 30)
     
-    const formsNeedingReviewFiltered = (formsData || []).filter(form => {
+    const formsNeedingReviewFiltered = (formsData || []).filter((form: IdentificationForm) => {
       const formDate = new Date(form.updated_at)
       // Check if form has no recent review
       const hasRecentReview = (reviews || []).some(
