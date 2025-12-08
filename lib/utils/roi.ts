@@ -34,12 +34,13 @@ export async function getStaffRates(supabase: any): Promise<Record<string, numbe
       .eq('is_active', true)
 
     if (data && data.length > 0) {
-      cachedRates = data.reduce((acc: Record<string, number>, rate: { staff_level: string; hourly_rate: number }) => {
+      const rates = data.reduce((acc: Record<string, number>, rate: { staff_level: string; hourly_rate: number }) => {
         acc[rate.staff_level] = rate.hourly_rate
         return acc
       }, {})
+      cachedRates = rates
       cacheTimestamp = Date.now()
-      return cachedRates
+      return rates
     }
   } catch (error) {
     console.error('Error fetching staff rates:', error)
