@@ -17,7 +17,7 @@ import {
   Loader2,
   Filter,
 } from 'lucide-react'
-import type { OversightReviewQueueItem, OversightStatus, Priority } from '@/types/database'
+import type { OversightReviewQueueItem, OversightStatus, Priority, IdentificationForm } from '@/types/database'
 
 const PRIORITY_CONFIG: Record<Priority, { color: string; label: string }> = {
   critical: { color: 'bg-red-100 text-red-700', label: 'Critical' },
@@ -95,7 +95,7 @@ export default function OversightReviewsPage() {
       console.error('Error fetching review queue:', error)
     } else {
       // Calculate annual value and days pending for each item
-      const itemsWithCalcs = (data || []).map(item => {
+      const itemsWithCalcs = (data || []).map((item: IdentificationForm) => {
         const timeSavings = item.time_savings as Array<{ staff_level: string; hours_per_week: number }> || []
         const annualValue = timeSavings.reduce((sum, ts) => {
           const rate = getStaffRate(ts.staff_level)
