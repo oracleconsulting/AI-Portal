@@ -111,17 +111,17 @@ BEGIN
   SELECT 
     u.id,
     u.email,
-    u.raw_user_meta_data->>'full_name',
-    (u.raw_user_meta_data->>'committee')::committee_type,
-    (u.raw_user_meta_data->>'role')::text,
+    COALESCE(u.raw_user_meta_data->>'full_name', ''),
+    COALESCE((u.raw_user_meta_data->>'committee')::committee_type, 'oversight'::committee_type),
+    COALESCE(u.raw_user_meta_data->>'role', 'member'),
     TRUE
   FROM auth.users u
   WHERE u.email IN ('prandall@rpgcc.co.uk', 'kfoster@rpgcc.co.uk')
   ON CONFLICT (id) DO UPDATE
   SET 
-    full_name = EXCLUDED.full_name,
-    committee = EXCLUDED.committee,
-    role = EXCLUDED.role,
+    full_name = COALESCE(EXCLUDED.full_name, profiles.full_name),
+    committee = COALESCE(EXCLUDED.committee, profiles.committee),
+    role = COALESCE(EXCLUDED.role, profiles.role),
     must_change_password = TRUE;
 
   RAISE NOTICE 'Profiles created/updated successfully';

@@ -66,8 +66,8 @@ export default function ImplementationReviewsPage() {
     const formsNeedingReviewFiltered = (formsData || []).filter(form => {
       const formDate = new Date(form.updated_at)
       // Check if form has no recent review
-      const hasRecentReview = (reviewData || []).some(
-        r => r.form_id === form.id && new Date(r.review_date) > overdueThreshold
+      const hasRecentReview = (reviews || []).some(
+        (r: ReviewWithForm) => r.form_id === form.id && new Date(r.review_date) > overdueThreshold
       )
       return !hasRecentReview && formDate < overdueThreshold
     })
