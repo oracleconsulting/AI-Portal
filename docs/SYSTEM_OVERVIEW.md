@@ -4,6 +4,10 @@
 
 The RPGCC AI Portal is a secure, role-based web application designed to help RPGCC manage their AI implementation initiative across two committees: the **Implementation Committee** (identifying AI opportunities) and the **Oversight Committee** (governance, security, and funding).
 
+**Current Version:** 2.0 (Governance-Enhanced)  
+**Last Updated:** December 2024  
+**Status:** ✅ Production Live at ai.torsor.co.uk
+
 ---
 
 ## Architecture Overview
@@ -21,9 +25,11 @@ The RPGCC AI Portal is a secure, role-based web application designed to help RPG
 │  │  │  IMPLEMENTATION │  │    OVERSIGHT    │  │        ADMIN            │  │   │
 │  │  │   COMMITTEE     │  │    COMMITTEE    │  │                         │  │   │
 │  │  │                 │  │                 │  │  • User Management      │  │   │
-│  │  │  • ID Forms     │  │  • Suggestions  │  │  • Invite System        │  │   │
-│  │  │  • Analytics    │  │  • Transcripts  │  │  • Bulk Invites         │  │   │
-│  │  │  • ROI Calcs    │  │  • Analytics    │  │                         │  │   │
+│  │  │  • ID Forms     │  │  • Review Queue │  │  • Invite System        │  │   │
+│  │  │  • Multi-level  │  │  • AI Tools     │  │  • Audit Log            │  │   │
+│  │  │    ROI          │  │  • Policies     │  │  • Staff Rates          │  │   │
+│  │  • Reviews         │  │  • Suggestions  │  │                         │  │   │
+│  │  • Analytics       │  │  • Transcripts  │  │                         │  │   │
 │  │  └─────────────────┘  └─────────────────┘  └─────────────────────────┘  │   │
 │  │                                                                          │   │
 │  │  Teams: BSG | Audit | Tax | Corporate Finance | Bookkeeping | Admin      │   │
@@ -72,18 +78,6 @@ The RPGCC AI Portal is a secure, role-based web application designed to help RPG
 
 ---
 
-## Domain Structure
-
-The AI Portal sits alongside the existing Torsor ecosystem:
-
-| Domain | Purpose | Status |
-|--------|---------|--------|
-| `torsor.co.uk` | Practice Platform | ✅ Live |
-| `client.torsor.co.uk` | Client Portal | ✅ Live |
-| `ai.torsor.co.uk` | **AI Committee Portal** | ✅ Live |
-
----
-
 ## Database Schema
 
 ### Core Tables
@@ -106,75 +100,110 @@ identification_forms
 ├── problem_identified (text)
 ├── solution (text)
 ├── cost_of_solution (decimal)
-├── time_savings (jsonb) -- Array of {staff_level, hours_per_week}
-├── time_saving_hours (decimal) -- Legacy, total hours
-├── staff_level (text) -- Legacy, primary staff level
-├── time_saving_description (text)
+├── time_savings (jsonb) -- Array of {staff_level, hours_per_week, weekly_value}
 ├── priority (enum: 'low' | 'medium' | 'high' | 'critical')
 ├── status (enum: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'in_progress' | 'completed')
 ├── submitted_by (uuid, FK → auth.users)
 ├── submitted_by_name (text)
 ├── notes (text)
+├── -- Oversight fields (added in v2.0)
+├── oversight_status (enum: 'not_required' | 'pending_review' | 'under_review' | 'approved' | 'rejected' | 'deferred' | 'requires_changes')
+├── oversight_reviewed_by (uuid, FK)
+├── oversight_reviewed_at (timestamp)
+├── oversight_notes (text)
+├── oversight_conditions (text)
+├── risk_category (text)
+├── risk_score (integer 1-5)
+├── data_classification (enum: 'public' | 'internal' | 'confidential' | 'restricted')
+├── security_review_required (boolean)
+├── escalated_to_partner (boolean)
 ├── created_at / updated_at
 
--- MEETING TRANSCRIPTS (Both Committees)
-meeting_transcripts
+-- AI TOOLS REGISTRY (v2.0)
+ai_tools
 ├── id (uuid, PK)
-├── title (text)
-├── meeting_date (date)
-├── transcript (text)
-├── summary (text)
-├── action_items (jsonb)
-├── committee (enum)
-├── team (enum)
-├── created_by (uuid, FK)
+├── name, vendor, version
+├── category (enum: llm_general, llm_coding, audit_specific, etc.)
+├── status (enum: proposed, evaluating, pilot, approved, approved_restricted, deprecated, banned)
+├── description, approved_use_cases (jsonb), prohibited_use_cases (jsonb)
+├── data_classification_permitted, data_residency
+├── processes_pii, processes_client_data
+├── pricing_model, annual_cost, cost_per_unit
+├── security_score (1-5), risk_score (1-5)
+├── has_soc2, has_iso27001, gdpr_compliant
+├── proposed_by, approved_by, linked_form_id
+├── next_review_date, review_frequency_months
 ├── created_at / updated_at
 
--- OVERSIGHT SUGGESTIONS
-oversight_suggestions
+-- IMPLEMENTATION REVIEWS (v2.0)
+implementation_reviews
 ├── id (uuid, PK)
-├── category (enum: 'cost' | 'security' | 'risk' | 'general')
-├── title (text)
-├── description (text)
-├── estimated_cost (decimal)
-├── risk_level (enum: 'low' | 'medium' | 'high')
-├── status (enum: 'pending' | 'reviewed' | 'approved' | 'rejected')
-├── submitted_by (uuid, FK)
+├── form_id (uuid, FK → identification_forms)
+├── tool_id (uuid, FK → ai_tools)
+├── review_type (enum: 30_day, 90_day, 180_day, 365_day, ad_hoc)
+├── review_date, review_due_date
+├── actual_time_saved (jsonb), actual_weekly_hours, actual_annual_value
+├── actual_cost, actual_roi
+├── projected_weekly_hours, projected_annual_value, projected_cost
+├── variance_percentage
+├── user_satisfaction_score (1-5), adoption_rate_percentage
+├── quality_impact (enum: improved, unchanged, declined)
+├── challenges_encountered, unexpected_benefits, lessons_learned
+├── recommendation (enum: continue, expand, modify, pause, discontinue)
+├── recommendation_notes, action_items (jsonb)
+├── next_review_date, requires_oversight_review
+├── reviewed_by, reviewed_by_name
 ├── created_at / updated_at
 
--- INVITES (User Invitation System)
-invites
+-- AUDIT LOG (v2.0)
+audit_log
 ├── id (uuid, PK)
-├── email (text)
-├── committee (enum)
-├── team (enum)
-├── role (text)
-├── token (text, unique)
-├── expires_at (timestamp)
-├── accepted_at (timestamp)
-├── email_sent_at (timestamp)
-├── created_by (uuid, FK)
-├── created_at
+├── table_name, record_id
+├── action (enum: create, update, delete, status_change, approval, rejection, etc.)
+├── changed_by, changed_by_name, changed_by_email
+├── changed_at
+├── old_values (jsonb), new_values (jsonb)
+├── change_summary (text)
+├── ip_address, user_agent, session_id
 
--- TEAMS (Reference Data)
-teams
-├── id (team_type, PK)
-├── name (text)
-├── description (text)
-├── created_at
+-- STAFF RATES (v2.0)
+staff_rates
+├── id (uuid, PK)
+├── staff_level (text, unique)
+├── hourly_rate (decimal)
+├── display_name, display_order
+├── is_active, effective_from, effective_to
+├── updated_by, created_at, updated_at
+
+-- POLICY DOCUMENTS (v2.0)
+policy_documents
+├── id (uuid, PK)
+├── policy_code, title, category
+├── summary, content (text)
+├── version, previous_version_id
+├── status (enum: draft, pending_approval, approved, superseded, archived)
+├── approved_by, approved_at
+├── effective_from, effective_to, review_date
+├── applies_to_committees (text[]), applies_to_teams (team_type[])
+├── owner, author, tags (text[])
+├── attachment_urls (jsonb)
+├── created_at / updated_at
+
+-- INVITES, MEETING_TRANSCRIPTS, OVERSIGHT_SUGGESTIONS, TEAMS
+-- (See full schema.sql for complete structure)
 ```
 
-### Staff Rates (Hardcoded)
+### Staff Rates (Configurable via Database)
 
-| Staff Level | Hourly Rate |
-|-------------|-------------|
-| Admin | £80/hr |
-| Junior | £100/hr |
-| Senior | £120/hr |
-| Assistant Manager | £150/hr |
-| Manager | £175/hr |
-| Director | £250/hr |
-| Partner | £400/hr |
+| Staff Level | Default Hourly Rate | Managed Via |
+|-------------|---------------------|-------------|
+| Admin | £80/hr | `staff_rates` table |
+| Junior | £100/hr | `staff_rates` table |
+| Senior | £120/hr | `staff_rates` table |
+| Assistant Manager | £150/hr | `staff_rates` table |
+| Manager | £175/hr | `staff_rates` table |
+| Director | £250/hr | `staff_rates` table |
+| Partner | £400/hr | `staff_rates` table |
 
 ---
 
@@ -187,29 +216,39 @@ Admin
   └── Can access BOTH committees
   └── Can send invites
   └── Can manage all forms
-  └── Can view all profiles
+  └── Can view audit logs
+  └── Can manage staff rates
+  └── Can manage policies
 
 Chair
   └── Can access their committee
-  └── Can update any form in their committee
+  └── Can approve/reject forms in oversight queue
+  └── Can manage tools in registry
   └── Can send invites
 
 Member
   └── Can access their committee only
   └── Can create/edit their own forms
   └── Can view all forms in their committee
+  └── Can create implementation reviews
 ```
 
-### Team Structure (Implementation Committee)
+### Committee Membership
 
-| Team | Members |
-|------|---------|
-| **BSG** | James Howard (Admin), Laura Pond |
-| **Audit** | Steve Johnson, Grace Bischoff |
-| **Tax** | Tim Humphries, Adam Thompson |
-| **Corporate Finance** | James Palmer, Sam Stern |
-| **Bookkeeping** | Katy Dunn, Charlotte Stead |
-| **Admin** | Nicola Sidoli |
+**Implementation Committee:**
+- **BSG:** James Howard (Admin), Laura Pond
+- **Audit:** Steve Johnson, Grace Bischoff
+- **Tax:** Tim Humphries, Adam Thompson
+- **Corporate Finance:** James Palmer, Sam Stern
+- **Bookkeeping:** Katy Dunn, Charlotte Stead
+- **Admin:** Nicola Sidoli
+
+**Oversight Committee:**
+- James Howard (Admin/Chair)
+- Steve Johnson
+- Paul Randall
+- Kevin Foster
+- Katie Dunn
 
 ---
 
@@ -227,10 +266,16 @@ Member
 - `/implementation/forms/[id]` - Form detail view
 - `/implementation/forms/[id]/edit` - Edit form
 - `/implementation/new` - Create new form
+- `/implementation/reviews` - Post-implementation reviews dashboard
+- `/implementation/reviews/new` - Create new review
 - `/implementation/analytics` - ROI analytics
 
 ### Oversight Committee Routes
 - `/oversight` - Dashboard
+- `/oversight/reviews` - Review queue for high-value proposals (≥£5k)
+- `/oversight/tools` - AI Tool Registry listing
+- `/oversight/tools/new` - Add new AI tool
+- `/oversight/tools/[id]` - Tool detail view
 - `/oversight/suggestions` - All suggestions
 - `/oversight/suggestions/new` - Create suggestion
 - `/oversight/transcripts` - Meeting transcripts
@@ -239,6 +284,7 @@ Member
 
 ### Admin Routes
 - `/admin/invites` - Invite management
+- `/admin/audit-log` - Complete audit trail viewer
 - `/dashboard` - Committee selection (redirect)
 
 ---
@@ -253,9 +299,10 @@ Member
 - Problem Identified (required)
 - Proposed Solution
 - Estimated Cost (£)
-- Time Savings by Staff Level (multiple entries)
+- Time Savings by Staff Level (multiple entries with auto-calculated values)
 - Priority (Low/Medium/High/Critical)
-- Status workflow
+- Status workflow: draft → submitted → under_review → approved → in_progress → completed
+- Risk assessment (category, score, data classification)
 - Notes
 
 **ROI Calculation:**
@@ -263,9 +310,67 @@ Member
 Weekly Value = Σ (hours_per_week × staff_rate)
 Annual Value = Weekly Value × 52
 ROI = (Annual Value / Cost) × 100
+Payback Period = (Cost / Annual Value) × 12 months
 ```
 
-### 2. Invite System
+**Oversight Integration:**
+- Forms with cost ≥£5,000 automatically flagged for oversight review
+- High-risk items (risk_score ≥4 or restricted data) always require oversight
+- Oversight can approve, reject, defer, or request changes
+- Approval conditions can be attached
+
+### 2. Oversight Review Queue
+
+**Purpose:** Governance review of high-value proposals
+
+**Features:**
+- Auto-populated queue of forms requiring oversight (≥£5k or high-risk)
+- Priority sorting by form priority and days pending
+- Quick actions: Approve, Reject, Defer, Request Changes
+- Review notes and approval conditions
+- Risk assessment display
+- Annual value calculations for prioritization
+
+### 3. AI Tool Registry
+
+**Purpose:** Centralized management of approved, evaluated, and banned AI tools
+
+**Features:**
+- Tool lifecycle: proposed → evaluating → pilot → approved → deprecated/banned
+- Security & risk scoring (1-5 scale)
+- Compliance tracking (SOC2, ISO 27001, GDPR)
+- Data classification permissions
+- Approved/prohibited use cases
+- Team-based permissions
+- Usage tracking (for future ROI measurement)
+- Review scheduling
+
+### 4. Post-Implementation Reviews
+
+**Purpose:** Track actual outcomes vs projected for ROI validation
+
+**Features:**
+- Scheduled reviews: 30, 90, 180, 365 days
+- Actual vs projected comparison with variance calculation
+- User satisfaction scoring (1-5)
+- Adoption rate tracking
+- Quality impact assessment
+- Challenges, benefits, and lessons learned
+- Recommendations: continue, expand, modify, pause, discontinue
+- Action items and next review scheduling
+
+### 5. Audit Logging System
+
+**Purpose:** Complete compliance trail for all system changes
+
+**Features:**
+- Automatic logging of all create/update/delete operations
+- Tracks: user, timestamp, old/new values, change summary
+- Searchable and filterable by table, action, user, date range
+- CSV export capability
+- Admin/chair-only access
+
+### 6. Invite System
 
 **Flow:**
 1. Admin creates invites via UI or bulk SQL
@@ -281,7 +386,7 @@ ROI = (Annual Value / Cost) × 100
 - 30-day expiry
 - Team assignment
 
-### 3. First-Time Password Change
+### 7. First-Time Password Change
 
 **Flow:**
 1. Admin creates user manually with temp password
@@ -289,17 +394,6 @@ ROI = (Annual Value / Cost) × 100
 3. User logs in → Middleware redirects to `/change-password`
 4. User sets new password → `must_change_password = false`
 5. Access granted to dashboard
-
-### 4. Analytics Dashboard
-
-**Metrics:**
-- Total Investment (sum of costs)
-- Weekly Time Saved (sum of hours)
-- Annual Value (calculated from staff rates)
-- Average ROI
-- Status Distribution
-- Priority Distribution
-- Top ROI Opportunities
 
 ---
 
@@ -332,6 +426,22 @@ Next.js middleware checks:
 2. Redirect unauthenticated users to login
 3. Redirect users needing password change
 4. Committee-based route protection
+
+---
+
+## Database Migrations
+
+All migrations are in `/supabase/migrations/`:
+
+| Migration | Purpose | Status |
+|-----------|---------|--------|
+| `001_invites.sql` | Invite system tables | ✅ Applied |
+| `002_audit_log.sql` | Audit logging system | ✅ Applied |
+| `003_oversight_approval.sql` | Oversight workflow | ✅ Applied |
+| `004_ai_tool_registry.sql` | AI tools registry | ✅ Applied |
+| `005_implementation_reviews.sql` | Post-implementation reviews | ✅ Applied |
+| `006_staff_rates.sql` | Configurable staff rates | ✅ Applied |
+| `007_policy_documents.sql` | Policy management | ✅ Applied |
 
 ---
 
@@ -385,199 +495,6 @@ cmd = "npm run start:next"
 
 ---
 
-## Conversation History & Development Timeline
-
-### Session 1: Project Setup
-
-**User Request:** Create a new "AI Portal" for RPGCC with two committees
-
-**Decisions Made:**
-- Next.js 14 with App Router
-- Supabase for auth + database
-- Railway for hosting
-- Committee-based access control
-
-**Key Deliverables:**
-- Project scaffolding
-- Supabase schema with RLS
-- Basic authentication flow
-- Committee selection dashboard
-
-### Session 2: Branding & Identity
-
-**User Request:** Remove all Oracle Consulting references, rebrand to RPGCC
-
-**Decisions Made:**
-- Created RPGCCLogo component (text + 3 dots)
-- Brand colors: Blue (#2D9CDB), Red (#EB5757), Amber (#F2994A)
-- Updated all UI text and meta tags
-
-### Session 3: Invite System
-
-**User Request:** Invite system with Resend for committee members
-
-**Decisions Made:**
-- Token-based invites with 30-day expiry
-- Branded email templates
-- Auto-populate profile on signup
-- Bulk invite feature
-
-**Challenges Solved:**
-- Resend rate limiting (increased delay to 600ms)
-- RLS infinite recursion (created is_admin() security definer function)
-
-### Session 4: Team Structure
-
-**User Request:** Add teams within Implementation Committee with private notes
-
-**Teams Added:**
-- BSG, Audit, Tax, Corporate Finance, Bookkeeping, Admin
-
-**Decisions Made:**
-- `team_type` enum added
-- Team column in profiles
-- Team-based RLS for meeting notes (future feature)
-
-### Session 5: Manual User Creation
-
-**User Request:** Create users manually since invite emails had issues
-
-**Solution:**
-- `/change-password` page for first-time login
-- `must_change_password` flag in profiles
-- Middleware redirect for password change
-- Provided SQL + instructions for manual user creation
-
-### Session 6: Form Enhancements
-
-**User Request:** 
-1. Fix 404 on form detail pages
-2. Add multiple staff levels for time savings
-
-**Staff Rates Defined:**
-- Admin: £80, Junior: £100, Senior: £120
-- Ass Mgr: £150, Manager: £175, Director: £250, Partner: £400
-
-**Deliverables:**
-- Form detail page (`/implementation/forms/[id]`)
-- Edit form page (`/implementation/forms/[id]/edit`)
-- `time_savings` JSONB field for multiple staff levels
-- Dynamic ROI calculation with breakdown
-
----
-
-## File Structure
-
-```
-ai-portal/
-├── app/
-│   ├── layout.tsx                    # Root layout
-│   ├── page.tsx                      # Landing page
-│   ├── globals.css                   # Global styles
-│   ├── login/page.tsx                # Login page
-│   ├── dashboard/page.tsx            # Committee selector
-│   ├── change-password/page.tsx      # First-time password change
-│   ├── auth/callback/route.ts        # Supabase auth callback
-│   ├── admin/
-│   │   └── invites/page.tsx          # Invite management
-│   ├── api/
-│   │   └── invite/
-│   │       ├── send/route.ts         # Single invite API
-│   │       └── send-bulk/route.ts    # Bulk invite API
-│   ├── implementation/
-│   │   ├── layout.tsx                # Implementation layout + sidebar
-│   │   ├── page.tsx                  # Dashboard
-│   │   ├── new/page.tsx              # New form
-│   │   ├── forms/
-│   │   │   ├── page.tsx              # All forms list
-│   │   │   └── [id]/
-│   │   │       ├── page.tsx          # Form detail
-│   │   │       └── edit/page.tsx     # Edit form
-│   │   └── analytics/page.tsx        # Analytics
-│   ├── oversight/
-│   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   ├── suggestions/
-│   │   ├── transcripts/
-│   │   └── analytics/
-│   └── invite/[token]/page.tsx       # Accept invite
-├── components/
-│   ├── Sidebar.tsx                   # Navigation sidebar
-│   └── RPGCCLogo.tsx                 # Brand logo
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts                 # Browser client
-│   │   ├── server.ts                 # Server client
-│   │   └── middleware.ts             # Auth middleware
-│   └── utils.ts                      # Utility functions
-├── types/
-│   └── database.ts                   # TypeScript types
-├── supabase/
-│   ├── schema.sql                    # Main database schema
-│   └── migrations/
-│       └── 001_invites.sql           # Invites migration
-├── middleware.ts                     # Next.js middleware
-├── tailwind.config.ts                # Tailwind + brand colors
-├── next.config.js                    # Next.js config
-├── nixpacks.toml                     # Railway build config
-├── railway.json                      # Railway deploy config
-└── package.json
-```
-
----
-
-## Governance Enhancement (Phase 2)
-
-### Audit Logging System
-- Complete audit trail for all database changes
-- Tracks: create, update, delete, status changes, approvals
-- Admin-only access with search and filtering
-- CSV export capability
-
-### Oversight Approval Workflow
-- Forms ≥£5,000 automatically flagged for oversight review
-- Oversight status: pending_review → under_review → approved/rejected/deferred
-- Risk assessment fields: risk_category, risk_score, data_classification
-- Approval conditions and notes
-- Configurable approval thresholds
-
-### AI Tool Registry
-- Central registry of all AI tools
-- Status workflow: proposed → evaluating → pilot → approved
-- Security/risk scoring (1-5)
-- Compliance tracking (SOC2, ISO 27001, GDPR)
-- Data classification permissions
-- Approved/prohibited use cases
-- Team permissions
-
-### Post-Implementation Reviews
-- Scheduled reviews: 30, 90, 180, 365 days
-- Actual vs projected ROI comparison
-- User satisfaction scoring
-- Recommendations: continue, expand, modify, pause, discontinue
-- Lessons learned tracking
-
-### Configurable Staff Rates
-- Database-driven hourly rates
-- Historical rate tracking for accurate retrospective calculations
-- Admin management interface
-
-### Policy Document Management
-- Version-controlled policies
-- Approval workflow
-- User acknowledgment tracking
-- Category organization
-
-## Future Enhancements (Not Yet Built)
-
-1. **Team-Specific Notes** - Private meeting notes per team
-2. **AI Transcript Summarization** - Auto-generate summaries + action items
-3. **Email Notifications** - Notify when forms change status
-4. **Export/Reports** - PDF/Excel export of forms and analytics
-5. **Board Reporting Pack** - Quarterly summary reports
-
----
-
 ## Quick Reference
 
 ### Login Credentials
@@ -596,6 +513,5 @@ ai-portal/
 
 ---
 
-*Document Generated: December 2025*
-*Version: 1.0*
-
+*Document Generated: December 2024*  
+*Version: 2.0 - Governance Enhanced*
