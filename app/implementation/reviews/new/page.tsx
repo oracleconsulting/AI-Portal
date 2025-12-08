@@ -114,7 +114,7 @@ export default function NewReviewPage() {
     // If we have a form_id in the URL, find and select it
     const urlFormId = searchParams.get('form_id')
     if (urlFormId && data) {
-      const form = data.find(f => f.id === urlFormId)
+      const form = data.find((f: IdentificationForm) => f.id === urlFormId)
       if (form) setSelectedForm(form)
     }
   }
