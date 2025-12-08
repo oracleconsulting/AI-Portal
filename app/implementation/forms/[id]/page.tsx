@@ -16,6 +16,7 @@ import {
   Edit,
   CheckCircle,
   XCircle,
+  Pencil,
 } from 'lucide-react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
@@ -57,6 +58,11 @@ const PRIORITY_CONFIG: Record<string, string> = {
   critical: 'bg-red-100 text-red-700',
 }
 
+interface TimeSaving {
+  staff_level: string
+  hours_per_week: number
+}
+
 interface Form {
   id: string
   problem_identified: string
@@ -65,6 +71,7 @@ interface Form {
   time_saving_hours: number | null
   time_saving_description: string | null
   staff_level: string | null
+  time_savings: TimeSaving[] | null
   priority: string
   status: string
   submitted_by: string | null
@@ -131,11 +138,29 @@ export default function FormDetailPage() {
     )
   }
 
-  const staffRate = form.staff_level ? STAFF_RATES[form.staff_level] : 75
-  const weeklyValue = form.time_saving_hours ? form.time_saving_hours * staffRate : 0
-  const annualValue = weeklyValue * 52
-  const roi = form.cost_of_solution && annualValue > 0 
-    ? Math.round((annualValue / form.cost_of_solution) * 100) 
+  // Calculate values from time_savings array or legacy fields
+  const calculateTotals = () => {
+    let totalWeeklyHours = 0
+    let totalWeeklyValue = 0
+
+    if (form.time_savings && Array.isArray(form.time_savings)) {
+      form.time_savings.forEach(ts => {
+        const rate = STAFF_RATES[ts.staff_level] || 0
+        totalWeeklyHours += ts.hours_per_week
+        totalWeeklyValue += ts.hours_per_week * rate
+      })
+    } else if (form.staff_level && form.time_saving_hours) {
+      const rate = STAFF_RATES[form.staff_level] || 75
+      totalWeeklyHours = form.time_saving_hours
+      totalWeeklyValue = form.time_saving_hours * rate
+    }
+
+    return { totalWeeklyHours, totalWeeklyValue, totalAnnualValue: totalWeeklyValue * 52 }
+  }
+
+  const totals = calculateTotals()
+  const roi = form.cost_of_solution && totals.totalAnnualValue > 0 
+    ? Math.round((totals.totalAnnualValue / form.cost_of_solution) * 100) 
     : null
 
   const statusConfig = STATUS_CONFIG[form.status] || STATUS_CONFIG.draft
@@ -172,6 +197,13 @@ export default function FormDetailPage() {
               </div>
             </div>
           </div>
+          <Link 
+            href={`/implementation/forms/${form.id}/edit`}
+            className="btn-secondary flex items-center gap-2"
+          >
+            <Pencil className="w-4 h-4" />
+            Edit
+          </Link>
         </div>
       </div>
 
@@ -212,11 +244,11 @@ export default function FormDetailPage() {
               <span className="text-sm font-medium text-surface-600">Time Saved</span>
             </div>
             <p className="text-2xl font-bold text-surface-900">
-              {form.time_saving_hours ? `${form.time_saving_hours} hrs/wk` : '—'}
+              {totals.totalWeeklyHours > 0 ? `${totals.totalWeeklyHours} hrs/wk` : '—'}
             </p>
-            {form.staff_level && (
+            {form.time_savings && form.time_savings.length > 0 && (
               <p className="text-sm text-surface-500 mt-1">
-                {STAFF_LABELS[form.staff_level]} @ £{staffRate}/hr
+                {form.time_savings.length} staff level(s)
               </p>
             )}
           </div>
@@ -229,11 +261,11 @@ export default function FormDetailPage() {
               <span className="text-sm font-medium text-surface-600">Annual Value</span>
             </div>
             <p className="text-2xl font-bold text-surface-900">
-              {annualValue > 0 ? `£${annualValue.toLocaleString()}` : '—'}
+              {totals.totalAnnualValue > 0 ? `£${totals.totalAnnualValue.toLocaleString()}` : '—'}
             </p>
-            {weeklyValue > 0 && (
+            {totals.totalWeeklyValue > 0 && (
               <p className="text-sm text-surface-500 mt-1">
-                £{weeklyValue.toLocaleString()}/week
+                £{totals.totalWeeklyValue.toLocaleString()}/week
               </p>
             )}
           </div>
@@ -253,6 +285,33 @@ export default function FormDetailPage() {
             )}
           </div>
         </div>
+
+        {/* Time Savings Breakdown */}
+        {form.time_savings && form.time_savings.length > 0 && (
+          <div className="bg-white rounded-2xl border border-surface-100 shadow-sm p-6">
+            <h2 className="font-display text-lg font-bold text-surface-900 mb-4">Time Savings Breakdown</h2>
+            <div className="space-y-3">
+              {form.time_savings.map((ts, index) => {
+                const rate = STAFF_RATES[ts.staff_level] || 0
+                const weeklyValue = ts.hours_per_week * rate
+                return (
+                  <div key={index} className="flex items-center justify-between py-2 border-b border-surface-100 last:border-0">
+                    <div className="flex items-center gap-3">
+                      <span className="px-2.5 py-1 rounded-lg bg-implementation-50 text-implementation-700 text-sm font-medium">
+                        {STAFF_LABELS[ts.staff_level] || ts.staff_level}
+                      </span>
+                      <span className="text-surface-600">{ts.hours_per_week} hrs/week @ £{rate}/hr</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-semibold text-surface-900">£{weeklyValue.toLocaleString()}/week</span>
+                      <span className="text-surface-500 text-sm ml-2">(£{(weeklyValue * 52).toLocaleString()}/year)</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Time Saving Details */}
         {form.time_saving_description && (
