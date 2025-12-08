@@ -19,14 +19,19 @@ import {
   Shield,
   Lightbulb,
   Users,
+  ClipboardCheck,
+  Cpu,
+  History,
+  FileCheck,
 } from 'lucide-react'
 
 interface SidebarProps {
   committee: 'implementation' | 'oversight'
   userName?: string
+  userRole?: string
 }
 
-export function Sidebar({ committee, userName }: SidebarProps) {
+export function Sidebar({ committee, userName, userRole }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -42,18 +47,27 @@ export function Sidebar({ committee, userName }: SidebarProps) {
     { href: '/implementation', label: 'Dashboard', icon: Home },
     { href: '/implementation/forms', label: 'All Forms', icon: FileText },
     { href: '/implementation/new', label: 'New Identification', icon: PlusCircle },
+    { href: '/implementation/reviews', label: 'Reviews', icon: ClipboardCheck },
     { href: '/implementation/analytics', label: 'Analytics', icon: BarChart3 },
   ]
 
   const oversightLinks = [
     { href: '/oversight', label: 'Dashboard', icon: Home },
+    { href: '/oversight/reviews', label: 'Review Queue', icon: FileCheck },
+    { href: '/oversight/tools', label: 'AI Tools Registry', icon: Cpu },
     { href: '/oversight/suggestions', label: 'Suggestions', icon: MessageSquare },
     { href: '/oversight/transcripts', label: 'Meeting Transcripts', icon: FileStack },
     { href: '/oversight/analytics', label: 'Analytics', icon: BarChart3 },
   ]
 
+  const adminLinks = [
+    { href: '/admin/invites', label: 'Invite Members', icon: Users },
+    { href: '/admin/audit-log', label: 'Audit Log', icon: History },
+  ]
+
   const links = committee === 'implementation' ? implementationLinks : oversightLinks
   const isImpl = committee === 'implementation'
+  const isAdmin = userRole === 'admin' || userRole === 'chair'
 
   return (
     <aside
@@ -95,7 +109,7 @@ export function Sidebar({ committee, userName }: SidebarProps) {
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {links.map((link) => {
           const Icon = link.icon
-          const isActive = pathname === link.href
+          const isActive = pathname === link.href || pathname.startsWith(link.href + '/')
           return (
             <Link
               key={link.href}
@@ -114,6 +128,36 @@ export function Sidebar({ committee, userName }: SidebarProps) {
             </Link>
           )
         })}
+
+        {/* Admin Section */}
+        {isAdmin && (
+          <>
+            {!isCollapsed && (
+              <div className="pt-4 pb-2 px-4">
+                <p className="text-xs font-medium text-surface-400 uppercase tracking-wider">Admin</p>
+              </div>
+            )}
+            {adminLinks.map((link) => {
+              const Icon = link.icon
+              const isActive = pathname === link.href || pathname.startsWith(link.href + '/')
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
+                    isActive
+                      ? 'bg-surface-100 text-surface-900 font-medium'
+                      : 'text-surface-600 hover:bg-surface-50 hover:text-surface-900'
+                  )}
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  {!isCollapsed && <span>{link.label}</span>}
+                </Link>
+              )
+            })}
+          </>
+        )}
       </nav>
 
       {/* User Section */}
@@ -125,13 +169,6 @@ export function Sidebar({ committee, userName }: SidebarProps) {
           </div>
         )}
         <div className="space-y-1">
-          <Link
-            href="/admin/invites"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-surface-600 hover:bg-surface-50 hover:text-surface-900 transition-all"
-          >
-            <Users className="w-5 h-5" />
-            {!isCollapsed && <span>Invite Members</span>}
-          </Link>
           <Link
             href="/settings"
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-surface-600 hover:bg-surface-50 hover:text-surface-900 transition-all"
@@ -151,4 +188,3 @@ export function Sidebar({ committee, userName }: SidebarProps) {
     </aside>
   )
 }
-

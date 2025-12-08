@@ -526,14 +526,55 @@ ai-portal/
 
 ---
 
+## Governance Enhancement (Phase 2)
+
+### Audit Logging System
+- Complete audit trail for all database changes
+- Tracks: create, update, delete, status changes, approvals
+- Admin-only access with search and filtering
+- CSV export capability
+
+### Oversight Approval Workflow
+- Forms ≥£5,000 automatically flagged for oversight review
+- Oversight status: pending_review → under_review → approved/rejected/deferred
+- Risk assessment fields: risk_category, risk_score, data_classification
+- Approval conditions and notes
+- Configurable approval thresholds
+
+### AI Tool Registry
+- Central registry of all AI tools
+- Status workflow: proposed → evaluating → pilot → approved
+- Security/risk scoring (1-5)
+- Compliance tracking (SOC2, ISO 27001, GDPR)
+- Data classification permissions
+- Approved/prohibited use cases
+- Team permissions
+
+### Post-Implementation Reviews
+- Scheduled reviews: 30, 90, 180, 365 days
+- Actual vs projected ROI comparison
+- User satisfaction scoring
+- Recommendations: continue, expand, modify, pause, discontinue
+- Lessons learned tracking
+
+### Configurable Staff Rates
+- Database-driven hourly rates
+- Historical rate tracking for accurate retrospective calculations
+- Admin management interface
+
+### Policy Document Management
+- Version-controlled policies
+- Approval workflow
+- User acknowledgment tracking
+- Category organization
+
 ## Future Enhancements (Not Yet Built)
 
 1. **Team-Specific Notes** - Private meeting notes per team
 2. **AI Transcript Summarization** - Auto-generate summaries + action items
 3. **Email Notifications** - Notify when forms change status
 4. **Export/Reports** - PDF/Excel export of forms and analytics
-5. **Audit Log** - Track all changes for compliance
-6. **Oversight Committee Full Build-out** - Suggestion workflows, cost tracking
+5. **Board Reporting Pack** - Quarterly summary reports
 
 ---
 
