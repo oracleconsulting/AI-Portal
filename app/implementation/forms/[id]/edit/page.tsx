@@ -79,12 +79,17 @@ export default function EditFormPage() {
         notes: data.notes || '',
       })
 
-      // Parse time_savings JSON or use legacy single field
+      // Parse time_savings JSON
       if (data.time_savings && Array.isArray(data.time_savings)) {
-        setTimeSavings(data.time_savings)
-      } else if (data.staff_level && data.time_saving_hours) {
+        setTimeSavings(data.time_savings.map((ts: any) => ({
+          staff_level: ts.staff_level || '',
+          hours_per_week: ts.hours_per_week || 0
+        })))
+      } else if (data.time_saving_hours) {
+        // Legacy fallback - if we have hours but no time_savings array, create a single entry
+        // Note: staff_level column no longer exists, so we can't populate it
         setTimeSavings([{ 
-          staff_level: data.staff_level, 
+          staff_level: '', 
           hours_per_week: data.time_saving_hours 
         }])
       }
@@ -148,9 +153,8 @@ export default function EditFormPage() {
           cost_of_solution: formData.cost_of_solution ? parseFloat(formData.cost_of_solution) : null,
           time_saving_description: formData.time_saving_description || null,
           time_savings: validTimeSavings.length > 0 ? validTimeSavings : null,
-          // Keep legacy fields for backwards compatibility
+          // Keep legacy time_saving_hours for backwards compatibility (if column exists)
           time_saving_hours: validTimeSavings.reduce((sum, ts) => sum + ts.hours_per_week, 0) || null,
-          staff_level: validTimeSavings[0]?.staff_level || null,
           priority: formData.priority,
           status: formData.status,
           notes: formData.notes || null,
