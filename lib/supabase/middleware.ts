@@ -49,23 +49,40 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Public routes that don't require auth
+  const isPublicRoute = 
+    request.nextUrl.pathname === '/' ||
+    request.nextUrl.pathname.startsWith('/login') ||
+    request.nextUrl.pathname.startsWith('/auth') ||
+    request.nextUrl.pathname.startsWith('/invite')
+
   // If not logged in and not on public routes, redirect to login
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    request.nextUrl.pathname !== '/'
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+  if (!user && !isPublicRoute) {
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/login'
+    return NextResponse.redirect(redirectUrl)
   }
 
   // If logged in and on login page, redirect to dashboard
   if (user && request.nextUrl.pathname === '/login') {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/dashboard'
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // Check if user needs to change password (skip for change-password page itself)
+  if (user && !request.nextUrl.pathname.startsWith('/change-password')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('must_change_password')
+      .eq('id', user.id)
+      .single()
+
+    if (profile?.must_change_password) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/change-password'
+      return NextResponse.redirect(redirectUrl)
+    }
   }
 
   return supabaseResponse
