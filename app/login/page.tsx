@@ -51,6 +51,19 @@ export default function LoginPage() {
               // Don't block login if logging fails
               console.error('Failed to log login activity:', logError)
             }
+
+            // Check if user needs to change password
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('must_change_password')
+              .eq('id', data.user.id)
+              .single()
+
+            if (profile?.must_change_password) {
+              router.push('/change-password')
+              router.refresh()
+              return
+            }
           }
 
           router.push('/dashboard')
