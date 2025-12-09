@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
@@ -12,7 +12,7 @@ function getResendClient() {
 
 export async function POST(request: Request) {
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = createClient()
     
     // Check if user is authenticated and is admin/chair
     const { data: { user } } = await supabase.auth.getUser()
@@ -20,14 +20,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || (profile.role !== 'admin' && profile.role !== 'chair')) {
-      return NextResponse.json({ error: 'Only admins and chairs can send invites' }, { status: 403 })
+    // Only jhoward@rpgcc.co.uk can send invites
+    if (user.email !== 'jhoward@rpgcc.co.uk') {
+      return NextResponse.json({ error: 'Only admins can send invites' }, { status: 403 })
     }
 
     const body = await request.json()

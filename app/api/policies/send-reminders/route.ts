@@ -13,13 +13,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, committee')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile || (profile.role !== 'admin' && profile.committee !== 'oversight')) {
+  // Only jhoward@rpgcc.co.uk can send policy reminders
+  if (user.email !== 'jhoward@rpgcc.co.uk') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
