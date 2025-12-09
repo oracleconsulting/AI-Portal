@@ -21,15 +21,15 @@
 ### High Priority
 
 #### 1. Database Migrations
-- [ ] **Run Phase 6 Migrations** - Apply migrations 008-011 to production:
-  - `008_team_notes.sql` - Team notes system
-  - `009_ai_transcript_fields.sql` - AI summary fields
-  - `010_tool_usage.sql` - Tool usage tracking
-  - `011_auto_approval_rules.sql` - Auto-approval system
+- [x] **Run Phase 6 Migrations** - Apply migrations 008-011 to production:
+  - `008_team_notes.sql` - Team notes system ✅
+  - `009_ai_transcript_fields.sql` - AI summary fields ✅
+  - `010_tool_usage.sql` - Tool usage tracking ✅
+  - `011_auto_approval_rules.sql` - Auto-approval system ✅
 
 #### 2. AI Features Setup
-- [ ] **Install Anthropic SDK** - Run `npm install @anthropic-ai/sdk`
-- [ ] **Configure API Key** - Add `ANTHROPIC_API_KEY` to Railway environment variables
+- [x] **AI Routes Updated** - Updated to use OpenRouter instead of Anthropic SDK ✅
+- [ ] **Configure API Key** - Add `OPENROUTER_API_KEY` to Railway environment variables
 - [ ] **Test AI Features** - Verify transcript summarization and ROI prediction work
 
 #### 3. Cron Job Setup
@@ -160,6 +160,9 @@
 ## 📝 Notes
 
 - All core functionality is complete and working
+- Phase 6 migrations have been run in production ✅
+- AI features now use OpenRouter (no Anthropic SDK needed) ✅
+- Light and dark logos have been saved to `/public/logos/` ✅
 - Phase 6 features are implemented but need testing and configuration
 - Most outstanding items are enhancements rather than critical features
 - The system is production-ready for current use cases

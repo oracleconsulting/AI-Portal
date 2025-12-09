@@ -1,9 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
-// Using dynamic import to avoid build errors if package not installed
-import Anthropic from '@anthropic-ai/sdk'
-
 export async function POST(req: NextRequest) {
   const supabase = createClient()
   
@@ -18,10 +15,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Form data required' }, { status: 400 })
   }
 
-  // Check if Anthropic is configured
-  if (!Anthropic || !process.env.ANTHROPIC_API_KEY) {
+  // Check if OpenRouter is configured
+  const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
+  if (!OPENROUTER_API_KEY) {
     return NextResponse.json(
-      { error: 'AI prediction not configured. Please set ANTHROPIC_API_KEY environment variable.' },
+      { error: 'AI prediction not configured. Please set OPENROUTER_API_KEY environment variable.' },
       { status: 503 }
     )
   }
@@ -48,10 +46,6 @@ export async function POST(req: NextRequest) {
   const stats = calculateHistoricalStats(historicalReviews || [])
 
   try {
-    const anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    })
-
     // Calculate projected annual value from time savings
     let projectedAnnualValue = 0
     if (formData.time_savings && Array.isArray(formData.time_savings)) {
@@ -71,13 +65,22 @@ export async function POST(req: NextRequest) {
       projectedAnnualValue = weeklyValue * 52
     }
 
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 1500,
-      messages: [
-        {
-          role: 'user',
-          content: `You are an AI ROI prediction assistant for an accounting firm's AI implementation initiatives.
+    // Use OpenRouter API with Claude model
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://ai.torsor.co.uk',
+        'X-Title': 'RPGCC AI Portal'
+      },
+      body: JSON.stringify({
+        model: 'anthropic/claude-3.5-sonnet',
+        max_tokens: 1500,
+        messages: [
+          {
+            role: 'user',
+            content: `You are an AI ROI prediction assistant for an accounting firm's AI implementation initiatives.
 
 Based on historical data and the new proposal, predict the likely actual ROI and provide confidence levels.
 
@@ -117,11 +120,17 @@ Return as JSON:
   "risk_factors": ["string"],
   "recommendations": ["string"]
 }`,
-        },
-      ],
+          },
+        ],
+      }),
     })
 
-    const responseText = message.content[0].type === 'text' ? message.content[0].text : '{}'
+    if (!response.ok) {
+      throw new Error(`OpenRouter API error: ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    const responseText = data.choices?.[0]?.message?.content || '{}'
     
     // Extract JSON from response
     const jsonMatch = responseText.match(/\{[\s\S]*\}/)
