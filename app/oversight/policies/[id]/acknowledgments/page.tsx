@@ -116,7 +116,7 @@ export default function PolicyAcknowledgmentsPage() {
 
     // Filter to users who haven't acknowledged
     const acknowledgedUserIds = new Set((ackData || []).map((a: any) => a.user_id))
-    const pending = (allUsers || []).filter(u => !acknowledgedUserIds.has(u.id))
+    const pending = (allUsers || []).filter((u: any) => !acknowledgedUserIds.has(u.id))
     setPendingUsers(pending)
 
     setLoading(false)
@@ -131,7 +131,7 @@ export default function PolicyAcknowledgmentsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           policy_id: policyId,
-          user_ids: pendingUsers.map(u => u.id),
+          user_ids: pendingUsers.map((u: any) => u.id),
         }),
       })
 
@@ -353,14 +353,14 @@ export default function PolicyAcknowledgmentsPage() {
             // Export to CSV
             const rows = [
               ['User', 'Email', 'Team', 'Status', 'Date'],
-              ...acknowledgments.map(a => [
+              ...acknowledgments.map((a: any) => [
                 a.user.full_name || '',
                 a.user.email,
                 a.user.team,
                 'Acknowledged',
                 formatDate(a.acknowledged_at)
               ]),
-              ...pendingUsers.map(u => [
+              ...pendingUsers.map((u: any) => [
                 u.full_name || '',
                 u.email,
                 u.team,
@@ -368,7 +368,7 @@ export default function PolicyAcknowledgmentsPage() {
                 ''
               ])
             ]
-            const csv = rows.map(r => r.map(cell => `"${cell}"`).join(',')).join('\n')
+            const csv = rows.map((r: any) => r.map((cell: any) => `"${cell}"`).join(',')).join('\n')
             const blob = new Blob([csv], { type: 'text/csv' })
             const url = URL.createObjectURL(blob)
             const a = document.createElement('a')

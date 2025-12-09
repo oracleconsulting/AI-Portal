@@ -155,22 +155,22 @@ function calculateHistoricalStats(reviews: any[]) {
     }
   }
 
-  const variances = reviews.map(r => r.variance_percentage || 0)
-  const avgVariance = variances.reduce((a, b) => a + b, 0) / variances.length
+  const variances = reviews.map((r: any) => r.variance_percentage || 0)
+  const avgVariance = variances.reduce((a: number, b: number) => a + b, 0) / variances.length
   
-  const overestimates = variances.filter(v => v > 0)
+  const overestimates = variances.filter((v: number) => v > 0)
   const avgOverestimate = overestimates.length > 0
-    ? overestimates.reduce((a, b) => a + b, 0) / overestimates.length
+    ? overestimates.reduce((a: number, b: number) => a + b, 0) / overestimates.length
     : 0
   
-  const accurate = variances.filter(v => Math.abs(v) <= 15).length
+  const accurate = variances.filter((v: number) => Math.abs(v) <= 15).length
   const accuracyRate = (accurate / variances.length) * 100
 
   // Team-specific adjustments
   const teamAdjustments: Record<string, number> = {}
   const teamGroups: Record<string, number[]> = {}
   
-  reviews.forEach(r => {
+  reviews.forEach((r: any) => {
     const team = r.identification_forms?.team
     if (team) {
       if (!teamGroups[team]) teamGroups[team] = []

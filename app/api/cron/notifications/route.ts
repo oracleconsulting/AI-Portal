@@ -100,13 +100,13 @@ export async function GET(req: NextRequest) {
         .select('policy_id')
         .eq('user_id', user.id)
 
-      const acknowledgedIds = new Set((acknowledged || []).map(a => a.policy_id))
+      const acknowledgedIds = new Set((acknowledged || []).map((a: any) => a.policy_id))
       const pendingAcknowledgments = (policies || [])
-        .filter(p => !acknowledgedIds.has(p.id))
-        .map(p => ({ title: p.title, policyId: p.id }))
+        .filter((p: any) => !acknowledgedIds.has(p.id))
+        .map((p: any) => ({ title: p.title, policyId: p.id }))
 
       // Calculate proposal values
-      const proposalsWithValues = (newProposals || []).map(p => {
+      const proposalsWithValues = (newProposals || []).map((p: any) => {
         const timeSavings = p.time_savings || []
         const weeklyValue = Array.isArray(timeSavings) 
           ? timeSavings.reduce((sum: number, ts: any) => {
@@ -124,7 +124,7 @@ export async function GET(req: NextRequest) {
       const result = await sendWeeklyDigest({
         recipientEmail: user.email,
         recipientName: user.full_name || 'Team Member',
-        pendingReviews: (userReviews || []).map(r => ({
+        pendingReviews: (userReviews || []).map((r: any) => ({
           title: r.problem_identified,
           dueDate: r.next_review_date ? new Date(r.next_review_date).toLocaleDateString('en-GB') : '',
           formId: r.id,

@@ -107,7 +107,7 @@ export default function ROIValidationPage() {
     // Calculate team accuracy
     const teamStats: Record<string, TeamAccuracy> = {}
 
-    transformedReviews.forEach(r => {
+    transformedReviews.forEach((r: any) => {
       if (!teamStats[r.team]) {
         teamStats[r.team] = {
           team: r.team,
@@ -133,20 +133,20 @@ export default function ROIValidationPage() {
 
     // Calculate averages
     Object.keys(teamStats).forEach(team => {
-      const teamReviews = transformedReviews.filter(r => r.team === team)
-      const variances = teamReviews.map(r => r.variance_percentage || 0)
+      const teamReviews = transformedReviews.filter((r: any) => r.team === team)
+      const variances = teamReviews.map((r: any) => r.variance_percentage || 0)
       teamStats[team].avg_variance = variances.reduce((a, b) => a + b, 0) / variances.length
     })
 
     setTeamAccuracy(Object.values(teamStats))
 
     // Calculate overall stats
-    const allVariances = transformedReviews.map(r => r.variance_percentage || 0)
+    const allVariances = transformedReviews.map((r: any) => r.variance_percentage || 0)
     const avgVariance = allVariances.length > 0 
       ? allVariances.reduce((a, b) => a + b, 0) / allVariances.length 
       : 0
 
-    const accurateCount = transformedReviews.filter(r => Math.abs(r.variance_percentage || 0) <= 15).length
+    const accurateCount = transformedReviews.filter((r: any) => Math.abs(r.variance_percentage || 0) <= 15).length
     const accuracyRate = transformedReviews.length > 0 
       ? (accurateCount / transformedReviews.length) * 100 
       : 0
@@ -168,8 +168,8 @@ export default function ROIValidationPage() {
     const threeMonthsAgo = new Date(now)
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
     
-    const recentReviews = reviews.filter(r => new Date(r.review_date) >= threeMonthsAgo)
-    const olderReviews = reviews.filter(r => new Date(r.review_date) < threeMonthsAgo)
+    const recentReviews = reviews.filter((r: any) => new Date(r.review_date) >= threeMonthsAgo)
+    const olderReviews = reviews.filter((r: any) => new Date(r.review_date) < threeMonthsAgo)
     
     if (recentReviews.length === 0 || olderReviews.length === 0) return 0
     
@@ -201,12 +201,12 @@ export default function ROIValidationPage() {
     return 'text-red-600'
   }
 
-  const filteredReviews = reviews.filter(r => {
+  const filteredReviews = reviews.filter((r: any) => {
     if (teamFilter !== 'all' && r.team !== teamFilter) return false
     return true
   })
 
-  const teams = Array.from(new Set(reviews.map(r => r.team)))
+  const teams = Array.from(new Set(reviews.map((r: any) => r.team)))
 
   if (loading) {
     return (
