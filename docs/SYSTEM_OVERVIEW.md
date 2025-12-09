@@ -4,7 +4,7 @@
 
 The RPGCC AI Portal is a secure, role-based web application designed to help RPGCC manage their AI implementation initiative across two committees: the **Implementation Committee** (identifying AI opportunities) and the **Oversight Committee** (governance, security, and funding).
 
-**Current Version:** 3.0 (Phase 6 Complete - Advanced Features)  
+**Current Version:** 3.1 (Phase 6 Complete + Committee Switcher + Brand Updates)  
 **Last Updated:** January 2025  
 **Status:** ✅ Production Live at ai.torsor.co.uk  
 **Repository:** https://github.com/oracleconsulting/AI-Portal
@@ -53,8 +53,8 @@ The RPGCC AI Portal is a secure, role-based web application designed to help RPG
 │  │                         EXTERNAL SERVICES                                 │  │
 │  │                                                                           │  │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │  │
-│  │  │   Railway    │  │    Resend    │  │  Anthropic   │  │  Cloudflare  │  │  │
-│  │  │  (Hosting)   │  │   (Email)    │  │   (Claude)   │  │    (DNS)     │  │  │
+│  │  │   Railway    │  │    Resend    │  │  OpenRouter  │  │  Cloudflare  │  │  │
+│  │  │  (Hosting)   │  │   (Email)    │  │   (AI API)   │  │    (DNS)     │  │  │
 │  │  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘  │  │
 │  └──────────────────────────────────────────────────────────────────────────┘  │
 │                                                                                 │
@@ -90,7 +90,7 @@ The RPGCC AI Portal is a secure, role-based web application designed to help RPG
 |---------|---------|
 | **Railway** | Container-based hosting and deployment |
 | **Resend** | Transactional email service (invites, notifications) |
-| **Anthropic Claude** | AI-powered features (summarization, ROI prediction) |
+| **OpenRouter** | AI API gateway (Claude models for summarization, ROI prediction) |
 | **Cloudflare** | DNS management for torsor.co.uk domain |
 | **GitHub** | Version control and repository hosting |
 
@@ -175,18 +175,26 @@ ai-portal/
 │   │   ├── 008_team_notes.sql
 │   │   ├── 009_ai_transcript_fields.sql
 │   │   ├── 010_tool_usage.sql
-│   │   └── 011_auto_approval_rules.sql
+│   │   ├── 011_auto_approval_rules.sql
+│   │   └── 012_multiple_committees.sql
 │   ├── schema.sql                # Complete database schema
 │   ├── add-oversight-users.sql   # User seeding script
+│   ├── add-dual-committee-users.sql # Dual committee access script
 │   └── seed-oversight-committee.sql # Committee seeding
 ├── types/                         # TypeScript type definitions
 │   └── database.ts               # Supabase database types
 ├── docs/                          # Documentation
+│   ├── COMMITTEE_SWITCHER_SETUP.md # Committee switcher guide
 │   ├── CRON_SETUP.md            # Cron job setup guide
 │   ├── PHASE_6_IMPLEMENTATION.md # Phase 6 features
 │   ├── ROADMAP.md               # Development roadmap
 │   ├── SYSTEM_OVERVIEW.md       # This document
 │   └── USER_CREDENTIALS.md      # User credentials
+├── public/                        # Static assets
+│   └── logos/                    # Logo image files
+│       ├── rpgcc-logo-dark.png  # Dark logo (for light backgrounds)
+│       ├── rpgcc-logo-light.png # Light logo (for dark backgrounds)
+│       └── rpgcc-logo.png       # Fallback logo
 ├── middleware.ts                  # Next.js middleware (auth)
 ├── next.config.js                # Next.js configuration
 ├── tailwind.config.ts            # Tailwind CSS configuration
@@ -314,12 +322,18 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 - id (uuid, PK, FK → auth.users)
 - email (text, unique)
 - full_name (text)
-- committee (enum: 'implementation' | 'oversight')
+- committee (enum: 'implementation' | 'oversight') -- Legacy, kept for backward compatibility
+- committees (text[]) -- NEW: Array of committees (allows multiple committee membership)
 - team (enum: 'bsg' | 'audit' | 'tax' | 'corporate_finance' | 'bookkeeping' | 'admin')
 - role (text: 'member' | 'chair' | 'admin')
 - must_change_password (boolean)
 - created_at, updated_at (timestamptz)
 ```
+
+**Multiple Committee Support:**
+- Users can belong to both Implementation and Oversight committees
+- `committees` array takes precedence over `committee` field
+- Committee switcher appears in sidebar for users with multiple committee access
 
 #### `identification_forms` (Implementation Committee)
 ```sql
@@ -488,6 +502,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 **Utility:**
 - `update_updated_at_column()` - Trigger to auto-update `updated_at` timestamps
 - `is_admin()` - Security definer function to check admin status
+- `is_user_in_committee(user_id, committee_name)` - Check if user belongs to committee
 
 ### Database Views
 
@@ -806,6 +821,11 @@ Member
 - Kevin Foster
 - Katie Dunn
 
+**Dual Committee Members (can switch between portals):**
+- James Howard (jhoward@rpgcc.co.uk) - Implementation + Oversight
+- Steve Johnson (sjohnson@rpgcc.co.uk) - Implementation + Oversight
+- Katy Dunn (kdunn@rpgcc.co.uk) - Implementation + Oversight
+
 ---
 
 ## Database Migrations
@@ -825,6 +845,7 @@ All migrations are in `/supabase/migrations/`:
 | `009_ai_transcript_fields.sql` | AI summary fields | ✅ Applied |
 | `010_tool_usage.sql` | Tool usage tracking | ✅ Applied |
 | `011_auto_approval_rules.sql` | Auto-approval system | ✅ Applied |
+| `012_multiple_committees.sql` | Multiple committee support | ✅ Applied |
 
 ---
 
@@ -846,10 +867,9 @@ NEXT_PUBLIC_APP_URL=https://ai.torsor.co.uk
 # Cron Jobs
 CRON_SECRET=[secure-random-string]
 
-# AI Features (Phase 6)
-ANTHROPIC_API_KEY=sk-ant-[key]
-# Or use OpenAI instead:
-# OPENAI_API_KEY=sk-[key]
+# AI Features (Phase 6) - Using OpenRouter
+OPENROUTER_API_KEY=sk-or-v1-[key]
+# OpenRouter provides access to multiple AI models including Claude
 ```
 
 ---
@@ -861,7 +881,7 @@ ANTHROPIC_API_KEY=sk-ant-[key]
 **nixpacks.toml:**
 ```toml
 [phases.setup]
-nixPkgs = ["nodejs_18"]
+nixPkgs = ["nodejs_20"]
 
 [phases.install]
 cmds = ["npm ci"]
@@ -869,8 +889,11 @@ cmds = ["npm ci"]
 [phases.build]
 cmds = ["npm run build"]
 
+[variables]
+NODE_VERSION = "20"
+
 [start]
-cmd = "npx next start -p ${PORT:-3030}"
+cmd = "npm start"
 ```
 
 **railway.json:**
@@ -892,10 +915,10 @@ cmd = "npx next start -p ${PORT:-3030}"
 ### Build Process
 
 1. Railway detects `nixpacks.toml`
-2. Installs Node.js 18
+2. Installs Node.js 20
 3. Runs `npm ci` to install dependencies
 4. Runs `npm run build` to build Next.js app
-5. Starts with `npx next start -p ${PORT:-3030}`
+5. Starts with `npm start` (runs `next start`)
 
 ### Domain Configuration
 
@@ -960,13 +983,39 @@ npm run lint
 
 ---
 
+## Recent Updates (v3.1)
+
+### Committee Switcher
+- Added support for users to belong to multiple committees
+- Committee switcher component in sidebar header
+- Seamless switching between Implementation and Oversight portals
+- Preserves current page path when switching
+
+### Brand Updates
+- Logo component now supports image files from `/public/logos/`
+- Updated brand colors throughout (RPGCC Blue, Red, Amber)
+- Improved layout spacing and consistency
+- Enhanced visual design alignment with RPGCC brand
+
+### AI Integration
+- Migrated from Anthropic SDK to OpenRouter API
+- More flexible AI model selection
+- Reduced dependency on single AI provider
+
+### Database Enhancements
+- Migration 012: Multiple committee support
+- `committees` array field in profiles table
+- Helper function `is_user_in_committee()` for RLS policies
+
 ## Version History
 
 - **v1.0** - Initial release with basic forms and committees
 - **v2.0** - Governance features (audit logging, oversight workflow, AI tool registry)
 - **v3.0** - Advanced features (team notes, AI summarization, ROI prediction, auto-approval, usage tracking)
+- **v3.1** - Committee switcher, brand updates, OpenRouter integration, multiple committee support
 
 ---
 
 *Document Generated: January 2025*  
-*Version: 3.0 - Phase 6 Complete*
+*Version: 3.1 - Phase 6 Complete + Committee Switcher + Brand Updates*  
+*Last Updated: January 2025*
