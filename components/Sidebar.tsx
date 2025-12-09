@@ -37,7 +37,7 @@ interface SidebarProps {
   userCommittees?: string[]
 }
 
-export function Sidebar({ committee, userName, userRole, userEmail: propUserEmail }: SidebarProps) {
+export function Sidebar({ committee, userName, userRole, userEmail: propUserEmail, userCommittees }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
