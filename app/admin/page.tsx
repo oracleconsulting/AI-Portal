@@ -15,6 +15,8 @@ import {
   AlertCircle,
   Loader2,
   FileCheck,
+  Lightbulb,
+  Home,
 } from 'lucide-react'
 
 export default function AdminDashboard() {
