@@ -87,6 +87,20 @@ export default function AdminDashboard() {
 
   const adminLinks = [
     {
+      href: '/implementation',
+      label: 'Implementation Committee',
+      description: 'View implementation dashboard and forms',
+      icon: Lightbulb,
+      color: 'implementation',
+    },
+    {
+      href: '/oversight',
+      label: 'Oversight Committee',
+      description: 'View oversight dashboard and reviews',
+      icon: Shield,
+      color: 'oversight',
+    },
+    {
       href: '/admin/invites',
       label: 'Invite Members',
       description: 'Send invitations and manage user access',
