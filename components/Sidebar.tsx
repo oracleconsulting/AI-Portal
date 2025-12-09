@@ -140,7 +140,7 @@ export function Sidebar({ committee, userName, userRole, userEmail: propUserEmai
           </button>
         </div>
         {!isCollapsed && (
-          <CommitteeSwitcher currentCommittee={committee} userCommittees={userCommittees || []} />
+          <CommitteeSwitcher currentCommittee={committee} />
         )}
       </div>
 
