@@ -178,8 +178,8 @@ export default function VotePage() {
       .select('*')
       .eq('form_id', formId)
 
-    const approvals = votes?.filter(v => v.decision === 'approve').length || 0
-    const rejections = votes?.filter(v => v.decision === 'reject').length || 0
+    const approvals = votes?.filter((v: any) => v.decision === 'approve').length || 0
+    const rejections = votes?.filter((v: any) => v.decision === 'reject').length || 0
 
     let outcome = null
     let shouldClose = false
