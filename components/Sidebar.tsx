@@ -25,6 +25,7 @@ import {
   FileCheck,
 } from 'lucide-react'
 import { RPGCCLogo } from '@/components/RPGCCLogo'
+import { CommitteeSwitcher } from '@/components/CommitteeSwitcher'
 
 interface SidebarProps {
   committee: 'implementation' | 'oversight'
@@ -85,7 +86,7 @@ export function Sidebar({ committee, userName, userRole }: SidebarProps) {
     >
       {/* Header */}
       <div className="p-4 border-b border-surface-100">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <Link href={isImpl ? '/implementation' : '/oversight'} className="flex items-center gap-3">
             {isCollapsed ? (
               <div className={cn('p-2 rounded-xl', isImpl ? 'gradient-implementation' : 'gradient-oversight')}>
@@ -97,7 +98,7 @@ export function Sidebar({ committee, userName, userRole }: SidebarProps) {
               </div>
             ) : (
               <>
-                <RPGCCLogo size="sm" variant="dark" />
+                <RPGCCLogo size="sm" variant="dark" useImage={true} />
                 <div className="h-6 w-px bg-surface-200" />
                 <div>
                   <span className="font-display font-bold text-surface-900 block text-sm">
@@ -115,6 +116,9 @@ export function Sidebar({ committee, userName, userRole }: SidebarProps) {
             {isCollapsed ? <Menu className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
           </button>
         </div>
+        {!isCollapsed && (
+          <CommitteeSwitcher currentCommittee={committee} />
+        )}
       </div>
 
       {/* Navigation */}

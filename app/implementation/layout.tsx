@@ -54,7 +54,7 @@ export default function ImplementationLayout({
   return (
     <div className="min-h-screen bg-surface-50">
       <Sidebar committee="implementation" userName={userName} />
-      <main className="ml-64 min-h-screen transition-all duration-300">
+      <main className="ml-64 min-h-screen transition-all duration-300 p-8">
         {children}
       </main>
     </div>
