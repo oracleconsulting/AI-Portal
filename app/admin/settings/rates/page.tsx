@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import {
@@ -33,10 +34,12 @@ interface RateHistory {
 
 export default function StaffRatesPage() {
   const supabase = createClient()
+  const router = useRouter()
 
   const [rates, setRates] = useState<StaffRate[]>([])
   const [history, setHistory] = useState<RateHistory[]>([])
   const [loading, setLoading] = useState(true)
+  const [isAuthorized, setIsAuthorized] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -45,8 +48,26 @@ export default function StaffRatesPage() {
   const [showHistory, setShowHistory] = useState(false)
 
   useEffect(() => {
-    fetchRates()
-  }, [])
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      // Only jhoward@rpgcc.co.uk has admin access
+      if (user.email !== 'jhoward@rpgcc.co.uk') {
+        router.push('/dashboard')
+        return
+      }
+
+      setIsAuthorized(true)
+      fetchRates()
+    }
+
+    checkAuth()
+  }, [router, supabase])
 
   async function fetchRates() {
     setLoading(true)
@@ -122,7 +143,7 @@ export default function StaffRatesPage() {
     })
   }
 
-  if (loading) {
+  if (loading || !isAuthorized) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[400px]">
         <Loader2 className="w-8 h-8 animate-spin text-oversight-500" />

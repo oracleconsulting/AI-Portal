@@ -45,8 +45,10 @@ const TABLE_LABELS: Record<string, string> = {
 
 export default function AuditLogPage() {
   const supabase = createClient()
+  const router = useRouter()
   const [logs, setLogs] = useState<AuditLog[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isAuthorized, setIsAuthorized] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterTable, setFilterTable] = useState<string>('all')
@@ -54,8 +56,26 @@ export default function AuditLogPage() {
   const [filterDateRange, setFilterDateRange] = useState<string>('week')
 
   useEffect(() => {
-    fetchLogs()
-  }, [filterDateRange])
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      // Only jhoward@rpgcc.co.uk has admin access
+      if (user.email !== 'jhoward@rpgcc.co.uk') {
+        router.push('/dashboard')
+        return
+      }
+
+      setIsAuthorized(true)
+      fetchLogs()
+    }
+
+    checkAuth()
+  }, [router, supabase, filterDateRange])
 
   const fetchLogs = async () => {
     setIsLoading(true)
@@ -177,7 +197,7 @@ export default function AuditLogPage() {
     )
   }
 
-  if (isLoading) {
+  if (isLoading || !isAuthorized) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[400px]">
         <Loader2 className="w-8 h-8 animate-spin text-surface-400" />

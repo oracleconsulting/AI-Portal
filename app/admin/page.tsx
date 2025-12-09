@@ -37,13 +37,8 @@ export default function AdminDashboard() {
         return
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-      if (!profile || (profile.role !== 'admin' && profile.role !== 'chair')) {
+      // Only jhoward@rpgcc.co.uk has admin access
+      if (user.email !== 'jhoward@rpgcc.co.uk') {
         router.push('/dashboard')
         return
       }

@@ -40,8 +40,8 @@ export default function DashboardPage() {
       if (profileData) {
         setProfile(profileData)
         
-        // Check if admin - redirect to admin dashboard
-        if (profileData.role === 'admin' || profileData.role === 'chair') {
+        // Check if admin - only jhoward@rpgcc.co.uk has admin access
+        if (user.email === 'jhoward@rpgcc.co.uk') {
           router.push('/admin')
           return
         }

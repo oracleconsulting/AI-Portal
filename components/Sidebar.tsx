@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -31,13 +31,29 @@ interface SidebarProps {
   committee: 'implementation' | 'oversight'
   userName?: string
   userRole?: string
+  userEmail?: string
 }
 
-export function Sidebar({ committee, userName, userRole }: SidebarProps) {
+export function Sidebar({ committee, userName, userRole, userEmail: propUserEmail }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [userEmail, setUserEmail] = useState<string | null>(propUserEmail || null)
+
+  useEffect(() => {
+    if (propUserEmail) {
+      setUserEmail(propUserEmail)
+    } else {
+      const fetchUserEmail = async () => {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user?.email) {
+          setUserEmail(user.email)
+        }
+      }
+      fetchUserEmail()
+    }
+  }, [supabase, propUserEmail])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -77,7 +93,8 @@ export function Sidebar({ committee, userName, userRole }: SidebarProps) {
 
   const links = committee === 'implementation' ? implementationLinks : oversightLinks
   const isImpl = committee === 'implementation'
-  const isAdmin = userRole === 'admin' || userRole === 'chair'
+  // Only jhoward@rpgcc.co.uk has admin access
+  const isAdmin = userEmail === 'jhoward@rpgcc.co.uk'
 
   return (
     <aside

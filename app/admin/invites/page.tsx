@@ -62,7 +62,12 @@ export default function InvitesAdminPage() {
         return
       }
 
-      // For demo purposes, allow access. In production, check role
+      // Only jhoward@rpgcc.co.uk has admin access
+      if (user.email !== 'jhoward@rpgcc.co.uk') {
+        router.push('/dashboard')
+        return
+      }
+
       fetchInvites()
     }
 

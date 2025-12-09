@@ -14,6 +14,7 @@ export default function ImplementationLayout({
   const router = useRouter()
   const supabase = createClient()
   const [userName, setUserName] = useState<string>('')
+  const [userEmail, setUserEmail] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -37,6 +38,9 @@ export default function ImplementationLayout({
         setUserName(user.email || '')
       }
       
+      // Pass user email to Sidebar for admin check
+      setUserEmail(user.email || '')
+      
       setIsLoading(false)
     }
 
@@ -53,7 +57,7 @@ export default function ImplementationLayout({
 
   return (
     <div className="min-h-screen bg-surface-50">
-      <Sidebar committee="implementation" userName={userName} />
+      <Sidebar committee="implementation" userName={userName} userEmail={userEmail} />
       <main className="ml-64 min-h-screen transition-all duration-300 p-8">
         {children}
       </main>
