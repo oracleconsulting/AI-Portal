@@ -112,6 +112,13 @@ export default function AdminDashboard() {
       color: 'oversight',
     },
     {
+      href: '/admin/governance-score',
+      label: 'ICAEW Compliance',
+      description: 'View governance compliance score and ICAEW mapping',
+      icon: FileCheck,
+      color: 'implementation',
+    },
+    {
       href: '/reports/board-pack',
       label: 'Board Pack',
       description: 'Generate executive reporting pack',
