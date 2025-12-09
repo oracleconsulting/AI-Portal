@@ -1,6 +1,5 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'AI Portal <noreply@torsor.co.uk>'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://ai.torsor.co.uk'
 
@@ -11,6 +10,8 @@ interface SendEmailParams {
 }
 
 async function sendEmail({ to, subject, html }: SendEmailParams) {
+  // Initialize Resend lazily to avoid build-time errors
+  const resend = new Resend(process.env.RESEND_API_KEY)
   try {
     await resend.emails.send({
       from: FROM_EMAIL,

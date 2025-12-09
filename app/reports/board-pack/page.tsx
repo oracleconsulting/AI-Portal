@@ -122,48 +122,48 @@ export default function BoardPackPage() {
       const auditCount = auditResult.count || 0
 
       // Calculate Investment Summary
-      const approvedForms = forms.filter(f => ['approved', 'in_progress', 'completed'].includes(f.status))
-      const totalApprovedCost = approvedForms.reduce((sum, f) => sum + (f.cost_of_solution || 0), 0)
+      const approvedForms = forms.filter((f: any) => ['approved', 'in_progress', 'completed'].includes(f.status))
+      const totalApprovedCost = approvedForms.reduce((sum: number, f: any) => sum + (f.cost_of_solution || 0), 0)
       
       // Calculate Value Realisation
-      const projectedValue = reviews.reduce((sum, r) => sum + (r.projected_annual_value || 0), 0)
-      const actualValue = reviews.reduce((sum, r) => sum + (r.actual_annual_value || 0), 0)
-      const accurateReviews = reviews.filter(r => Math.abs(r.variance_percentage || 0) <= 15).length
+      const projectedValue = reviews.reduce((sum: number, r: any) => sum + (r.projected_annual_value || 0), 0)
+      const actualValue = reviews.reduce((sum: number, r: any) => sum + (r.actual_annual_value || 0), 0)
+      const accurateReviews = reviews.filter((r: any) => Math.abs(r.variance_percentage || 0) <= 15).length
 
       // Calculate Pipeline
-      const pendingOversight = forms.filter(f => f.oversight_status === 'pending_review')
-      const inProgress = forms.filter(f => f.status === 'in_progress')
-      const drafts = forms.filter(f => f.status === 'draft')
+      const pendingOversight = forms.filter((f: any) => f.oversight_status === 'pending_review')
+      const inProgress = forms.filter((f: any) => f.status === 'in_progress')
+      const drafts = forms.filter((f: any) => f.status === 'draft')
 
       // Calculate Risk Posture
-      const approvedTools = tools.filter(t => ['approved', 'approved_restricted'].includes(t.status))
-      const highRiskTools = tools.filter(t => (t.risk_score || 0) >= 4)
-      const toolsWithSecurity = tools.filter(t => t.security_score !== null)
+      const approvedTools = tools.filter((t: any) => ['approved', 'approved_restricted'].includes(t.status))
+      const highRiskTools = tools.filter((t: any) => (t.risk_score || 0) >= 4)
+      const toolsWithSecurity = tools.filter((t: any) => t.security_score !== null)
       const avgSecurityScore = toolsWithSecurity.length > 0
-        ? toolsWithSecurity.reduce((sum, t) => sum + (t.security_score || 0), 0) / toolsWithSecurity.length
+        ? toolsWithSecurity.reduce((sum: number, t: any) => sum + (t.security_score || 0), 0) / toolsWithSecurity.length
         : 0
       
       // Tool reviews overdue
       const now = new Date()
-      const overdueReviews = tools.filter(t => 
+      const overdueReviews = tools.filter((t: any) => 
         t.next_review_date && new Date(t.next_review_date) < now
       ).length
 
       // Calculate Compliance
-      const activePolicies = policies.filter(p => p.status === 'approved')
-      const policiesPendingReview = policies.filter(p => 
+      const activePolicies = policies.filter((p: any) => p.status === 'approved')
+      const policiesPendingReview = policies.filter((p: any) => 
         p.review_date && new Date(p.review_date) < now && p.status === 'approved'
       )
       
       // Get unique users who need to acknowledge
       const { data: profiles } = await supabase.from('profiles').select('id')
       const totalUsers = profiles?.length || 1
-      const usersWithAcknowledgements = new Set(acknowledgements.map(a => a.user_id)).size
+      const usersWithAcknowledgements = new Set(acknowledgements.map((a: any) => a.user_id)).size
       const acknowledgmentRate = (usersWithAcknowledgements / totalUsers) * 100
 
       // Calculate Team Performance
       const teamStats: Record<string, any> = {}
-      forms.forEach(f => {
+      forms.forEach((f: any) => {
         const team = f.team || 'unknown'
         if (!teamStats[team]) {
           teamStats[team] = {
@@ -201,9 +201,9 @@ export default function BoardPackPage() {
       })
 
       // Calculate top wins (highest ROI completed implementations)
-      const completedForms = forms.filter(f => f.status === 'completed')
+      const completedForms = forms.filter((f: any) => f.status === 'completed')
       const wins = completedForms
-        .map(f => {
+        .map((f: any) => {
           const timeSavings = f.time_savings || []
           let annualValue = 0
           let roi = 0
@@ -219,14 +219,14 @@ export default function BoardPackPage() {
             roi,
           }
         })
-        .sort((a, b) => b.roi - a.roi)
+        .sort((a: any, b: any) => b.roi - a.roi)
         .slice(0, 5)
 
       // Challenges (rejected or discontinued)
       const challenges = forms
-        .filter(f => f.status === 'rejected')
+        .filter((f: any) => f.status === 'rejected')
         .slice(0, 3)
-        .map(f => ({
+        .map((f: any) => ({
           title: f.problem_identified,
           description: f.oversight_notes || 'No details provided',
         }))
@@ -239,8 +239,8 @@ export default function BoardPackPage() {
           total_approved_cost: totalApprovedCost,
           total_proposals: forms.length,
           proposals_approved: approvedForms.length,
-          proposals_pending: forms.filter(f => f.status === 'submitted' || f.status === 'under_review').length,
-          proposals_rejected: forms.filter(f => f.status === 'rejected').length,
+          proposals_pending: forms.filter((f: any) => f.status === 'submitted' || f.status === 'under_review').length,
+          proposals_rejected: forms.filter((f: any) => f.status === 'rejected').length,
           avg_proposal_value: approvedForms.length > 0 ? totalApprovedCost / approvedForms.length : 0,
         },
         
@@ -253,9 +253,9 @@ export default function BoardPackPage() {
         
         pipeline: {
           pending_oversight_count: pendingOversight.length,
-          pending_oversight_value: pendingOversight.reduce((sum, f) => sum + (f.cost_of_solution || 0), 0),
+          pending_oversight_value: pendingOversight.reduce((sum: number, f: any) => sum + (f.cost_of_solution || 0), 0),
           in_progress_count: inProgress.length,
-          in_progress_value: inProgress.reduce((sum, f) => sum + (f.cost_of_solution || 0), 0),
+          in_progress_value: inProgress.reduce((sum: number, f: any) => sum + (f.cost_of_solution || 0), 0),
           draft_count: drafts.length,
         },
         

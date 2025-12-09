@@ -2,9 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 import { NextRequest, NextResponse } from 'next/server'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(req: NextRequest) {
+  // Initialize Resend lazily to avoid build-time errors
+  const resend = new Resend(process.env.RESEND_API_KEY)
   const supabase = createClient()
   
   // Check authorization
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ 
-    sent: results.filter(r => r.success).length, 
+    sent: results.filter((r: any) => r.success).length, 
     total: results.length,
     results 
   })
