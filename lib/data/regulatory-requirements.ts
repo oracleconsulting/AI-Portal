@@ -3,7 +3,8 @@
 
 export interface RegulatoryRequirement {
   id: string
-  source: string
+  source?: string
+  pillar?: string
   article?: string
   requirement: string
   implementation: string
