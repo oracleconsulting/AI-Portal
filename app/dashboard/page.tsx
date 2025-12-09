@@ -31,17 +31,43 @@ export default function DashboardPage() {
 
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, committees')
         .eq('id', user.id)
-        .single() as { data: ProfileData | null }
+        .single() as { data: (ProfileData & { committees?: string[] | null; role?: string }) | null }
 
       if (profileData) {
         setProfile(profileData)
+        
+        // Check if admin - redirect to admin dashboard
+        if (profileData.role === 'admin' || profileData.role === 'chair') {
+          router.push('/admin')
+          return
+        }
+        
+        // Check committees array first (for multiple committee support)
+        const committees = profileData.committees && Array.isArray(profileData.committees) && profileData.committees.length > 0
+          ? profileData.committees
+          : profileData.committee
+            ? [profileData.committee]
+            : []
+        
+        // If user has multiple committees, show selection
+        if (committees.length > 1) {
+          setIsLoading(false)
+          return // Show committee selection
+        }
+        
         // Redirect to appropriate committee portal
-        if (profileData.committee === 'implementation') {
+        if (committees.includes('implementation')) {
+          router.push('/implementation')
+        } else if (committees.includes('oversight')) {
+          router.push('/oversight')
+        } else if (profileData.committee === 'implementation') {
           router.push('/implementation')
         } else if (profileData.committee === 'oversight') {
           router.push('/oversight')
+        } else {
+          setIsLoading(false)
         }
       } else {
         setIsLoading(false)
