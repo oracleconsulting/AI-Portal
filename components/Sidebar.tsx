@@ -80,6 +80,7 @@ export function Sidebar({ committee, userName, userRole, userEmail: propUserEmai
     { href: '/oversight/suggestions', label: 'Suggestions', icon: MessageSquare },
     { href: '/oversight/transcripts', label: 'Meeting Transcripts', icon: FileStack },
     { href: '/oversight/analytics', label: 'Analytics', icon: BarChart3 },
+    { href: '/intelligence', label: 'Intelligence Hub', icon: Search },
   ]
 
       const adminLinks = [
