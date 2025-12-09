@@ -18,18 +18,18 @@ export function RPGCCLogo({
   size = 'md',
   variant = 'dark',
   useImage = true
-}: RPGCCLogoProps) {
+}: Readonly<RPGCCLogoProps>) {
   const [imageError, setImageError] = useState(false)
   const [currentLogoPath, setCurrentLogoPath] = useState<string | null>(null)
   
   const sizeClasses = {
-    sm: { text: 'text-lg', dots: 'w-2 h-2', gap: 'gap-1', image: 'h-6' },
-    md: { text: 'text-2xl', dots: 'w-2.5 h-2.5', gap: 'gap-1.5', image: 'h-8' },
-    lg: { text: 'text-4xl', dots: 'w-3 h-3', gap: 'gap-2', image: 'h-12' },
-    xl: { text: 'text-5xl', dots: 'w-4 h-4', gap: 'gap-2.5', image: 'h-16' },
+    sm: { text: 'text-lg', dots: 'w-2 h-2', gap: 'gap-1', image: 'h-6', width: 80, height: 24 },
+    md: { text: 'text-2xl', dots: 'w-2.5 h-2.5', gap: 'gap-1.5', image: 'h-8', width: 120, height: 32 },
+    lg: { text: 'text-4xl', dots: 'w-3 h-3', gap: 'gap-2', image: 'h-12', width: 180, height: 48 },
+    xl: { text: 'text-5xl', dots: 'w-4 h-4', gap: 'gap-2.5', image: 'h-16', width: 240, height: 64 },
   }
 
-  const { text, dots, gap, image } = sizeClasses[size]
+  const { text, dots, gap, image, width, height } = sizeClasses[size]
   const textColor = variant === 'light' ? 'text-white' : 'text-surface-900'
 
   // Determine logo path
@@ -46,24 +46,26 @@ export function RPGCCLogo({
   // Try to use image logo if enabled and not errored
   const shouldUseImage = useImage && !imageError && currentLogoPath
 
+  const handleImageError = () => {
+    // Try fallback logo if primary failed
+    if (currentLogoPath === primaryLogoPath) {
+      setCurrentLogoPath(fallbackLogoPath)
+    } else {
+      // Both failed, show text version
+      setImageError(true)
+    }
+  }
+
   if (shouldUseImage) {
     return (
       <div className={cn('flex items-center', className)}>
         <Image
           src={currentLogoPath}
           alt="RPGCC Logo"
-          width={size === 'sm' ? 80 : size === 'md' ? 120 : size === 'lg' ? 180 : 240}
-          height={size === 'sm' ? 24 : size === 'md' ? 32 : size === 'lg' ? 48 : 64}
+          width={width}
+          height={height}
           className={cn('object-contain', image)}
-          onError={() => {
-            // Try fallback logo if primary failed
-            if (currentLogoPath === primaryLogoPath) {
-              setCurrentLogoPath(fallbackLogoPath)
-            } else {
-              // Both failed, show text version
-              setImageError(true)
-            }
-          }}
+          onError={handleImageError}
           priority={size === 'lg' || size === 'xl'}
         />
       </div>
@@ -91,7 +93,7 @@ export function RPGCCLogo({
   )
 }
 
-export function RPGCCLogoIcon({ className }: { className?: string }) {
+export function RPGCCLogoIcon({ className }: Readonly<{ className?: string }>) {
   return (
     <div className={cn('flex items-center gap-1.5', className)}>
       <div className="w-2.5 h-2.5 rounded-full bg-[#2D9CDB]" />
