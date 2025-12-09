@@ -34,6 +34,7 @@ interface SidebarProps {
   userName?: string
   userRole?: string
   userEmail?: string
+  userCommittees?: string[]
 }
 
 export function Sidebar({ committee, userName, userRole, userEmail: propUserEmail }: SidebarProps) {
