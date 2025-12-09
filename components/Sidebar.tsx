@@ -23,6 +23,8 @@ import {
   Cpu,
   History,
   FileCheck,
+  Activity,
+  Search,
 } from 'lucide-react'
 import { RPGCCLogo } from '@/components/RPGCCLogo'
 import { CommitteeSwitcher } from '@/components/CommitteeSwitcher'
