@@ -206,7 +206,7 @@ export default function ROIValidationPage() {
     return true
   })
 
-  const teams = [...new Set(reviews.map(r => r.team))]
+  const teams = Array.from(new Set(reviews.map(r => r.team)))
 
   if (loading) {
     return (
