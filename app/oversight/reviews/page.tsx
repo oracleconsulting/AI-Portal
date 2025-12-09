@@ -386,6 +386,13 @@ export default function OversightReviewsPage() {
                       <FileText className="w-4 h-4" />
                       View Full Details
                     </Link>
+                    <Link
+                      href={`/oversight/reviews/${item.id}/vote`}
+                      className="btn-oversight flex items-center gap-2"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      Vote
+                    </Link>
                     <div className="flex-1" />
                     <button
                       onClick={() => setReviewModal({ isOpen: true, formId: item.id, action: 'changes' })}
