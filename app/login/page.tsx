@@ -20,24 +20,46 @@ export default function LoginPage() {
     setIsLoading(true)
     setError(null)
 
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          })
 
-      if (error) {
-        setError(error.message)
-        return
-      }
+          if (error) {
+            setError(error.message)
+            return
+          }
 
-      router.push('/dashboard')
-      router.refresh()
-    } catch {
-      setError('An unexpected error occurred')
-    } finally {
-      setIsLoading(false)
-    }
+          // Log login activity
+          if (data.user) {
+            try {
+              // Get IP and user agent from headers (if available)
+              const ipAddress = null // Could be passed from server if needed
+              const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : null
+              
+              await fetch('/api/activity/log-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  user_id: data.user.id,
+                  ip_address: ipAddress,
+                  user_agent: userAgent,
+                }),
+              })
+            } catch (logError) {
+              // Don't block login if logging fails
+              console.error('Failed to log login activity:', logError)
+            }
+          }
+
+          router.push('/dashboard')
+          router.refresh()
+        } catch {
+          setError('An unexpected error occurred')
+        } finally {
+          setIsLoading(false)
+        }
   }
 
   return (

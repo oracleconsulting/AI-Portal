@@ -66,12 +66,14 @@ export function Sidebar({ committee, userName, userRole }: SidebarProps) {
     { href: '/oversight/analytics', label: 'Analytics', icon: BarChart3 },
   ]
 
-  const adminLinks = [
-    { href: '/admin/invites', label: 'Invite Members', icon: Users },
-    { href: '/admin/settings/rates', label: 'Staff Rates', icon: Settings },
-    { href: '/admin/audit-log', label: 'Audit Log', icon: History },
-    { href: '/reports/board-pack', label: 'Board Pack', icon: FileText },
-  ]
+      const adminLinks = [
+        { href: '/admin', label: 'Admin Dashboard', icon: Home },
+        { href: '/admin/invites', label: 'Invite Members', icon: Users },
+        { href: '/admin/settings/rates', label: 'Staff Rates', icon: Settings },
+        { href: '/admin/audit-log', label: 'Audit Log', icon: History },
+        { href: '/admin/activity', label: 'User Activity', icon: BarChart3 },
+        { href: '/reports/board-pack', label: 'Board Pack', icon: FileText },
+      ]
 
   const links = committee === 'implementation' ? implementationLinks : oversightLinks
   const isImpl = committee === 'implementation'
