@@ -9,11 +9,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // RPGCC Brand Colors
+        // RPGCC Brand Colors (matching website)
         rpgcc: {
-          blue: '#2D9CDB',
-          red: '#EB5757',
-          amber: '#F2994A',
+          blue: '#2D9CDB',      // Primary blue
+          red: '#EB5757',       // Primary red
+          amber: '#F2994A',     // Primary orange/amber
+          dark: '#1e293b',      // Dark blue (header/nav)
+          darker: '#0f172a',    // Very dark blue
         },
         // Implementation Committee - RPGCC Blue
         implementation: {

@@ -49,6 +49,9 @@ export default function EditFormPage() {
     priority: 'medium' as Priority,
     status: 'draft',
     notes: '',
+    risk_category: '',
+    risk_score: '',
+    data_classification: '',
   })
 
   const [timeSavings, setTimeSavings] = useState<TimeSaving[]>([
@@ -77,6 +80,9 @@ export default function EditFormPage() {
         priority: data.priority || 'medium',
         status: data.status || 'draft',
         notes: data.notes || '',
+        risk_category: data.risk_category || '',
+        risk_score: data.risk_score?.toString() || '',
+        data_classification: data.data_classification || '',
       })
 
       // Parse time_savings JSON
@@ -158,6 +164,9 @@ export default function EditFormPage() {
           priority: formData.priority,
           status: formData.status,
           notes: formData.notes || null,
+          risk_category: formData.risk_category || null,
+          risk_score: formData.risk_score ? parseInt(formData.risk_score) : null,
+          data_classification: formData.data_classification || null,
         })
         .eq('id', formId)
 
@@ -421,6 +430,92 @@ export default function EditFormPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Risk Assessment */}
+          <div className="border-t border-surface-100 pt-6">
+            <h3 className="text-sm font-semibold text-surface-900 mb-4">Risk Assessment</h3>
+            <p className="text-sm text-surface-500 mb-4">
+              Proposals with high risk scores or restricted data classification will automatically require oversight review.
+            </p>
+            
+            <div className="grid md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-surface-700 mb-2">
+                  Primary Risk Category
+                </label>
+                <select
+                  value={formData.risk_category}
+                  onChange={(e) => setFormData({ ...formData, risk_category: e.target.value })}
+                  className="input-field"
+                >
+                  <option value="">Select category...</option>
+                  <option value="security">Security</option>
+                  <option value="data">Data Privacy</option>
+                  <option value="compliance">Compliance/Regulatory</option>
+                  <option value="operational">Operational</option>
+                  <option value="financial">Financial</option>
+                  <option value="reputational">Reputational</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-surface-700 mb-2">
+                  Risk Score (1-5)
+                </label>
+                <select
+                  value={formData.risk_score}
+                  onChange={(e) => setFormData({ ...formData, risk_score: e.target.value })}
+                  className="input-field"
+                >
+                  <option value="">Not assessed</option>
+                  <option value="1">1 - Very Low</option>
+                  <option value="2">2 - Low</option>
+                  <option value="3">3 - Moderate</option>
+                  <option value="4">4 - High (requires oversight)</option>
+                  <option value="5">5 - Critical (requires oversight)</option>
+                </select>
+                {formData.risk_score && parseInt(formData.risk_score) >= 4 && (
+                  <p className="text-xs text-orange-600 mt-1">
+                    ⚠️ High risk - will require oversight review
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-surface-700 mb-2">
+                  Data Classification
+                </label>
+                <select
+                  value={formData.data_classification}
+                  onChange={(e) => setFormData({ ...formData, data_classification: e.target.value })}
+                  className="input-field"
+                >
+                  <option value="">Select classification...</option>
+                  <option value="public">Public - Non-sensitive information</option>
+                  <option value="internal">Internal - Internal business data</option>
+                  <option value="confidential">Confidential - Client/financial data</option>
+                  <option value="restricted">Restricted - Highly sensitive/regulated</option>
+                </select>
+                {formData.data_classification === 'restricted' && (
+                  <p className="text-xs text-red-600 mt-1">
+                    ⚠️ Restricted data - will require oversight review
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Oversight requirement explanation */}
+            {(parseFloat(formData.cost_of_solution) >= 5000 || 
+              (formData.risk_score && parseInt(formData.risk_score) >= 4) || 
+              formData.data_classification === 'restricted') && (
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  ℹ️ This proposal will require Oversight Committee review before approval due to:
+                  {parseFloat(formData.cost_of_solution) >= 5000 && <span className="block">• Cost ≥ £5,000</span>}
+                  {formData.risk_score && parseInt(formData.risk_score) >= 4 && <span className="block">• High risk score ({formData.risk_score}/5)</span>}
+                  {formData.data_classification === 'restricted' && <span className="block">• Restricted data classification</span>}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Notes */}

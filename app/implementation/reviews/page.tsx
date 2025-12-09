@@ -16,6 +16,7 @@ import {
   Calendar,
 } from 'lucide-react'
 import type { ImplementationReview, IdentificationForm, ReviewRecommendation } from '@/types/database'
+import { ExportButton } from '@/components/ExportButton'
 
 const RECOMMENDATION_CONFIG: Record<ReviewRecommendation, { color: string; label: string; icon: typeof TrendingUp }> = {
   continue: { color: 'bg-blue-100 text-blue-700', label: 'Continue', icon: TrendingUp },
@@ -107,10 +108,16 @@ export default function ImplementationReviewsPage() {
             </p>
           </div>
         </div>
-        <Link href="/implementation/reviews/new" className="btn-primary flex items-center gap-2">
-          <Plus className="w-5 h-5" />
-          New Review
-        </Link>
+        <div className="flex items-center gap-3">
+          <ExportButton
+            endpoint="/api/export/reviews"
+            filename={`implementation-reviews-${new Date().toISOString().split('T')[0]}.csv`}
+          />
+          <Link href="/implementation/reviews/new" className="btn-primary flex items-center gap-2">
+            <Plus className="w-5 h-5" />
+            New Review
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}

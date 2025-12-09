@@ -24,6 +24,7 @@ import {
   History,
   FileCheck,
 } from 'lucide-react'
+import { RPGCCLogo } from '@/components/RPGCCLogo'
 
 interface SidebarProps {
   committee: 'implementation' | 'oversight'
@@ -48,13 +49,17 @@ export function Sidebar({ committee, userName, userRole }: SidebarProps) {
     { href: '/implementation/forms', label: 'All Forms', icon: FileText },
     { href: '/implementation/new', label: 'New Identification', icon: PlusCircle },
     { href: '/implementation/reviews', label: 'Reviews', icon: ClipboardCheck },
-    { href: '/implementation/analytics', label: 'Analytics', icon: BarChart3 },
+    { href: '/implementation/team-notes', label: 'Team Notes', icon: FileText },
+    { href: '/implementation/analytics/roi-validation', label: 'ROI Validation', icon: BarChart3 },
+    { href: '/implementation/analytics/teams', label: 'Team Performance', icon: Users },
   ]
 
   const oversightLinks = [
     { href: '/oversight', label: 'Dashboard', icon: Home },
     { href: '/oversight/reviews', label: 'Review Queue', icon: FileCheck },
     { href: '/oversight/tools', label: 'AI Tools Registry', icon: Cpu },
+    { href: '/oversight/policies', label: 'Policies', icon: FileText },
+    { href: '/oversight/auto-approval', label: 'Auto-Approval Rules', icon: Settings },
     { href: '/oversight/suggestions', label: 'Suggestions', icon: MessageSquare },
     { href: '/oversight/transcripts', label: 'Meeting Transcripts', icon: FileStack },
     { href: '/oversight/analytics', label: 'Analytics', icon: BarChart3 },
@@ -62,7 +67,9 @@ export function Sidebar({ committee, userName, userRole }: SidebarProps) {
 
   const adminLinks = [
     { href: '/admin/invites', label: 'Invite Members', icon: Users },
+    { href: '/admin/settings/rates', label: 'Staff Rates', icon: Settings },
     { href: '/admin/audit-log', label: 'Audit Log', icon: History },
+    { href: '/reports/board-pack', label: 'Board Pack', icon: FileText },
   ]
 
   const links = committee === 'implementation' ? implementationLinks : oversightLinks
@@ -80,20 +87,25 @@ export function Sidebar({ committee, userName, userRole }: SidebarProps) {
       <div className="p-4 border-b border-surface-100">
         <div className="flex items-center justify-between">
           <Link href={isImpl ? '/implementation' : '/oversight'} className="flex items-center gap-3">
-            <div className={cn('p-2 rounded-xl', isImpl ? 'gradient-implementation' : 'gradient-oversight')}>
-              {isImpl ? (
-                <Lightbulb className="w-5 h-5 text-white" />
-              ) : (
-                <Shield className="w-5 h-5 text-white" />
-              )}
-            </div>
-            {!isCollapsed && (
-              <div>
-                <span className="font-display font-bold text-surface-900 block text-sm">
-                  {isImpl ? 'Implementation' : 'Oversight'}
-                </span>
-                <span className="text-xs text-surface-500">Committee</span>
+            {isCollapsed ? (
+              <div className={cn('p-2 rounded-xl', isImpl ? 'gradient-implementation' : 'gradient-oversight')}>
+                {isImpl ? (
+                  <Lightbulb className="w-5 h-5 text-white" />
+                ) : (
+                  <Shield className="w-5 h-5 text-white" />
+                )}
               </div>
+            ) : (
+              <>
+                <RPGCCLogo size="sm" variant="dark" />
+                <div className="h-6 w-px bg-surface-200" />
+                <div>
+                  <span className="font-display font-bold text-surface-900 block text-sm">
+                    {isImpl ? 'Implementation' : 'Oversight'}
+                  </span>
+                  <span className="text-xs text-surface-500">Committee</span>
+                </div>
+              </>
             )}
           </Link>
           <button

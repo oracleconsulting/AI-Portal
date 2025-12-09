@@ -171,13 +171,27 @@ export default function AIToolDetailPage() {
               </a>
             )}
             {(userRole === 'admin' || userRole === 'chair') && (
-              <Link
-                href={`/oversight/tools/${tool.id}/edit`}
-                className="btn-primary flex items-center gap-2"
-              >
-                <Edit className="w-4 h-4" />
-                Edit Tool
-              </Link>
+              <>
+                <Link
+                  href={`/oversight/tools/${tool.id}/edit`}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <Edit className="w-4 h-4" />
+                  Edit Tool
+                </Link>
+                <Link
+                  href={`/oversight/tools/${tool.id}/permissions`}
+                  className="btn-secondary flex items-center gap-2"
+                >
+                  Manage Permissions
+                </Link>
+                <Link
+                  href={`/oversight/tools/${tool.id}/usage`}
+                  className="btn-secondary flex items-center gap-2"
+                >
+                  Usage Analytics
+                </Link>
+              </>
             )}
           </div>
         </div>

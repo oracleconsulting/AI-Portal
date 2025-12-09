@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
+import { StatusBadge } from '@/components/StatusBadge'
 
 const STAFF_RATES: Record<string, number> = {
   admin: 80,
@@ -79,6 +80,17 @@ interface Form {
   notes: string | null
   created_at: string
   updated_at: string
+  oversight_required?: boolean
+  oversight_status?: string
+  oversight_reviewed_by?: string | null
+  oversight_reviewed_by_name?: string | null
+  oversight_reviewed_at?: string | null
+  oversight_notes?: string | null
+  oversight_conditions?: string | null
+  risk_category?: string | null
+  risk_score?: number | null
+  data_classification?: string | null
+  security_review_required?: boolean
 }
 
 export default function FormDetailPage() {
@@ -95,7 +107,10 @@ export default function FormDetailPage() {
     const fetchForm = async () => {
       const { data, error } = await supabase
         .from('identification_forms')
-        .select('*')
+        .select(`
+          *,
+          reviewer:profiles!identification_forms_oversight_reviewed_by_fkey(full_name)
+        `)
         .eq('id', formId)
         .single()
 
@@ -103,7 +118,10 @@ export default function FormDetailPage() {
         console.error('Error fetching form:', error)
         setError('Form not found')
       } else {
-        setForm(data)
+        setForm({
+          ...data,
+          oversight_reviewed_by_name: (data as any).reviewer?.full_name || null
+        })
       }
       setIsLoading(false)
     }
@@ -321,6 +339,16 @@ export default function FormDetailPage() {
           </div>
         )}
 
+        {/* Oversight Status Section */}
+        {form.oversight_required && form.oversight_status && form.oversight_status !== 'not_required' && (
+          <OversightStatusSection form={form} />
+        )}
+
+        {/* Risk Assessment Section */}
+        {(form.risk_category || form.risk_score || form.data_classification) && (
+          <RiskAssessmentSection form={form} />
+        )}
+
         {/* Notes */}
         {form.notes && (
           <div className="bg-white rounded-2xl border border-surface-100 shadow-sm p-6">
@@ -347,6 +375,139 @@ export default function FormDetailPage() {
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function OversightStatusSection({ form }: { form: Form }) {
+  const getOversightStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved': return 'bg-green-50 border-green-200'
+      case 'rejected': return 'bg-red-50 border-red-200'
+      case 'pending_review': return 'bg-orange-50 border-orange-200'
+      case 'under_review': return 'bg-blue-50 border-blue-200'
+      case 'deferred': return 'bg-yellow-50 border-yellow-200'
+      case 'requires_changes': return 'bg-amber-50 border-amber-200'
+      default: return 'bg-surface-50 border-surface-200'
+    }
+  }
+
+  return (
+    <div className={`rounded-2xl border p-6 ${getOversightStatusColor(form.oversight_status || '')}`}>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-display text-lg font-bold text-surface-900">Oversight Review</h2>
+        <StatusBadge status={form.oversight_status || 'not_required'} type="oversight" />
+      </div>
+
+      {form.oversight_reviewed_by && (
+        <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+          <div>
+            <span className="text-surface-500">Reviewed By:</span>
+            <span className="ml-2 font-medium">{form.oversight_reviewed_by_name || 'Unknown'}</span>
+          </div>
+          <div>
+            <span className="text-surface-500">Reviewed At:</span>
+            <span className="ml-2 font-medium">
+              {form.oversight_reviewed_at
+                ? formatDate(form.oversight_reviewed_at)
+                : '-'}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {form.oversight_notes && (
+        <div className="mb-4">
+          <h3 className="text-sm font-medium text-surface-700 mb-1">Review Notes</h3>
+          <p className="text-sm text-surface-600 bg-white/50 p-3 rounded-lg">{form.oversight_notes}</p>
+        </div>
+      )}
+
+      {form.oversight_conditions && form.oversight_status === 'approved' && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <h3 className="text-sm font-medium text-yellow-800 mb-1">⚠️ Approval Conditions</h3>
+          <p className="text-sm text-yellow-700">{form.oversight_conditions}</p>
+        </div>
+      )}
+
+      {form.oversight_status === 'pending_review' && (
+        <p className="text-sm text-orange-700">
+          This proposal requires oversight review due to its cost (≥£5,000) or risk level.
+          It will be reviewed by the Oversight Committee.
+        </p>
+      )}
+
+      {form.oversight_status === 'requires_changes' && (
+        <p className="text-sm text-amber-700">
+          The Oversight Committee has requested changes. Please review the notes above and update the form accordingly.
+        </p>
+      )}
+    </div>
+  )
+}
+
+function RiskAssessmentSection({ form }: { form: Form }) {
+  const getRiskScoreColor = (score: number | null) => {
+    if (!score) return 'text-surface-500'
+    if (score <= 2) return 'text-green-600'
+    if (score <= 3) return 'text-yellow-600'
+    return 'text-red-600'
+  }
+
+  const getDataClassificationBadge = (classification: string | null) => {
+    if (!classification) return null
+
+    const colors: Record<string, string> = {
+      public: 'bg-green-100 text-green-800',
+      internal: 'bg-blue-100 text-blue-800',
+      confidential: 'bg-orange-100 text-orange-800',
+      restricted: 'bg-red-100 text-red-800',
+    }
+
+    return (
+      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${colors[classification] || 'bg-surface-100 text-surface-800'}`}>
+        {classification.charAt(0).toUpperCase() + classification.slice(1)}
+      </span>
+    )
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-surface-100 shadow-sm p-6">
+      <h2 className="font-display text-lg font-bold text-surface-900 mb-4">Risk Assessment</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {form.risk_category && (
+          <div>
+            <span className="text-sm text-surface-500">Risk Category</span>
+            <p className="font-medium capitalize text-surface-900">{form.risk_category}</p>
+          </div>
+        )}
+        
+        {form.risk_score && (
+          <div>
+            <span className="text-sm text-surface-500">Risk Score</span>
+            <p className={`font-medium ${getRiskScoreColor(form.risk_score)}`}>
+              {form.risk_score}/5
+              {form.risk_score >= 4 && ' ⚠️ High Risk'}
+            </p>
+          </div>
+        )}
+        
+        {form.data_classification && (
+          <div>
+            <span className="text-sm text-surface-500">Data Classification</span>
+            <div className="mt-1">{getDataClassificationBadge(form.data_classification)}</div>
+          </div>
+        )}
+      </div>
+
+      {form.security_review_required && (
+        <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+          <p className="text-sm text-orange-700">
+            🔒 Security review required before implementation
+          </p>
+        </div>
+      )}
     </div>
   )
 }

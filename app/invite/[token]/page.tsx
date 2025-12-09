@@ -160,7 +160,7 @@ export default function InviteSignupPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-50">
         <div className="flex flex-col items-center gap-4">
-          <RPGCCLogo size="lg" />
+          <RPGCCLogo size="lg" variant="dark" />
           <Loader2 className="w-6 h-6 text-implementation-600 animate-spin" />
           <p className="text-surface-600">Loading invitation...</p>
         </div>

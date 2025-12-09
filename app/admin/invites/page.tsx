@@ -197,7 +197,7 @@ export default function InvitesAdminPage() {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <RPGCCLogo size="sm" />
+              <RPGCCLogo size="sm" variant="dark" />
               <div className="h-6 w-px bg-surface-200" />
               <span className="font-medium text-surface-600">Invite Management</span>
             </div>

@@ -13,6 +13,7 @@ import {
   FileText,
   TrendingUp,
 } from 'lucide-react'
+import { ExportButton } from '@/components/ExportButton'
 
 export default function FormsListPage() {
   const supabase = createClient()
@@ -99,10 +100,20 @@ export default function FormsListPage() {
             {filteredForms.length} forms found
           </p>
         </div>
-        <Link href="/implementation/new" className="btn-primary flex items-center gap-2">
-          <PlusCircle className="w-5 h-5" />
-          New Form
-        </Link>
+        <div className="flex items-center gap-3">
+          <ExportButton
+            endpoint="/api/export/forms"
+            filename={`forms-${new Date().toISOString().split('T')[0]}.csv`}
+            filters={{
+              status: statusFilter,
+              priority: priorityFilter,
+            }}
+          />
+          <Link href="/implementation/new" className="btn-primary flex items-center gap-2">
+            <PlusCircle className="w-5 h-5" />
+            New Form
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}

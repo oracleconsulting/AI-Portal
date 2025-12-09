@@ -49,7 +49,7 @@ export default function HomePage() {
         {/* Header */}
         <header className="flex items-center justify-between mb-20 animate-fade-in">
           <div className="flex items-center gap-4">
-            <RPGCCLogo size="md" />
+            <RPGCCLogo size="md" variant="dark" />
             <div className="h-8 w-px bg-surface-200" />
             <span className="font-display font-semibold text-lg text-surface-600">AI Portal</span>
           </div>

@@ -73,7 +73,7 @@ export default function ChangePasswordPage() {
         <div className="bg-white rounded-2xl shadow-xl border border-surface-100 p-8">
           {/* Logo */}
           <div className="flex justify-center mb-8">
-            <RPGCCLogo size="lg" />
+            <RPGCCLogo size="lg" variant="dark" />
           </div>
 
           <div className="text-center mb-8">

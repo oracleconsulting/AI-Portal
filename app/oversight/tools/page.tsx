@@ -18,6 +18,7 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import type { AITool, ToolCategory, ToolStatus } from '@/types/database'
+import { ExportButton } from '@/components/ExportButton'
 
 const CATEGORY_LABELS: Record<ToolCategory, string> = {
   llm_general: 'LLM (General)',
@@ -122,12 +123,22 @@ export default function AIToolRegistryPage() {
             </p>
           </div>
         </div>
-        {(userRole === 'admin' || userRole === 'chair') && (
-          <Link href="/oversight/tools/new" className="btn-primary flex items-center gap-2">
-            <Plus className="w-5 h-5" />
-            Add Tool
-          </Link>
-        )}
+        <div className="flex items-center gap-3">
+          <ExportButton
+            endpoint="/api/export/tools"
+            filename={`ai-tools-${new Date().toISOString().split('T')[0]}.csv`}
+            filters={{
+              status: filterStatus,
+              category: filterCategory,
+            }}
+          />
+          {(userRole === 'admin' || userRole === 'chair') && (
+            <Link href="/oversight/tools/new" className="btn-primary flex items-center gap-2">
+              <Plus className="w-5 h-5" />
+              Add Tool
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Stats */}
