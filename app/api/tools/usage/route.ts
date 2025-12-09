@@ -97,8 +97,8 @@ export async function GET(req: NextRequest) {
     .eq('id', user.id)
     .single()
 
-      // Only jhoward@rpgcc.co.uk can view all usage data, or oversight committee members
-      const canViewAll = user.email === 'jhoward@rpgcc.co.uk' || profile?.committee === 'oversight'
+  // Only jhoward@rpgcc.co.uk can view all usage data, or oversight committee members
+  const canViewAll = (user.email === 'jhoward@rpgcc.co.uk') || (profile?.committee === 'oversight')
 
   let query = supabase
     .from('tool_usage_daily')
