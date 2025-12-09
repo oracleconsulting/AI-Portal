@@ -134,7 +134,7 @@ export async function GET(req: NextRequest) {
         pendingAcknowledgments,
       })
 
-      if (!result.skipped) {
+      if (!('skipped' in result && result.skipped)) {
         results.weeklyDigests.push({ userId: user.id, ...result })
       }
     }
