@@ -12,6 +12,8 @@ interface ProfileData {
   id: string
   committee: CommitteeType
   full_name: string | null
+  committees?: string[] | null
+  role?: string
 }
 
 export default function DashboardPage() {
