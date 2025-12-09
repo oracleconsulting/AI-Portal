@@ -5,12 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // Or use OpenAI: npm install openai
 
 // Using dynamic import to avoid build errors if package not installed
-let Anthropic: any = null
-try {
-  Anthropic = require('@anthropic-ai/sdk').default
-} catch {
-  // Package not installed - will handle gracefully
-}
+import Anthropic from '@anthropic-ai/sdk'
 
 export async function POST(req: NextRequest) {
   const supabase = createClient()
@@ -28,7 +23,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Check if Anthropic is configured
-  if (!Anthropic || !process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
       { error: 'AI summarization not configured. Please set ANTHROPIC_API_KEY environment variable.' },
       { status: 503 }

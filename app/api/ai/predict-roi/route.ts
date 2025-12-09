@@ -2,12 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 // Using dynamic import to avoid build errors if package not installed
-let Anthropic: any = null
-try {
-  Anthropic = require('@anthropic-ai/sdk').default
-} catch {
-  // Package not installed - will handle gracefully
-}
+import Anthropic from '@anthropic-ai/sdk'
 
 export async function POST(req: NextRequest) {
   const supabase = createClient()
