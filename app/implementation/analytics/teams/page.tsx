@@ -93,14 +93,14 @@ export default function TeamPerformancePage() {
     })
 
     // Count members per team
-    ;(profiles || []).forEach(p => {
+    ;(profiles || []).forEach((p: any) => {
       if (p.team && teamData[p.team]) {
         teamData[p.team].active_members++
       }
     })
 
     // Process forms
-    ;(forms || []).forEach(f => {
+    ;(forms || []).forEach((f: any) => {
       const team = f.team || 'unknown'
       if (!teamData[team]) return
 
